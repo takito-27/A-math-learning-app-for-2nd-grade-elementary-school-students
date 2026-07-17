@@ -114,24 +114,6 @@ const unitData = [
         problems: [
             {
                 type: "problem",
-                text: "12×3をならった九九をつかってもとめましょう。",
-                hint: "12を2つにわけて、それぞれ九九を計算してからたし算しよう。",
-                style: "split-multiplication",
-
-                optionsTitle: "1. 12を2つにわけてみよう",
-
-                drawA:'<img src="img/fig10to2.png" class="option-image">',
-                drawB:'<img src="img/fig8to4.png" class="option-image">',
-                drawC:'<img src="img/fig6to6.png" class="option-image">',
-
-                answers:{
-                    A:[10,3,30,2,3,6],
-                    B:[8,3,24,4,3,12],
-                    C:[6,3,18,6,3,18]
-                }
-            },
-            {
-                type: "problem",
                 text: "11×3をならった九九をつかってもとめましょう。",
                 hint: "11を2つにわけて、それぞれ九九を計算してからたし算しよう。",
                 style: "split-multiplication",
