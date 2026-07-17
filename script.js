@@ -944,8 +944,7 @@ const unitData = [
     }
 
     function toggleHint() {
-        const h = document.getElementById('hint-display');
-        h.style.display = (h.style.display === "none") ? "block" : "none";
+        document.getElementById("character-message").style.display = "flex";
     }
 
     function openKeypad(id, isGridTable = false) {
