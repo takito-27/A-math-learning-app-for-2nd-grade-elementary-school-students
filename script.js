@@ -348,9 +348,11 @@ const unitData = [
             renderDifficulty(data.difficulty ?? 1);
             
             document.getElementById("problem-text").innerText = data.text;
-            document.getElementById('hint-display').innerText = data.hint;
             document.getElementById("character-balloon").innerText = data.hint;
-            document.getElementById('hint-display').style.display = "none";
+
+            // 問題を開いた直後は非表示
+            document.getElementById("character-message").style.display = "none";
+            document.getElementById("hint-btn").style.display = "none";
 
             if (data.style === "chocolate-multiplication") {
                 showChocolateProblem(data)
