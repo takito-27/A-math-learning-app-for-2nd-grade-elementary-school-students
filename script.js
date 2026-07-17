@@ -363,8 +363,15 @@ const unitData = [
             } else if(data.style==="normal"){
                 showNormalProblem(data);
             }
-            selectedId = ""; resetSelection(); document.getElementById('result-message').innerText = "";
-            document.getElementById('custom-keypad').style.display = "none";
+            selectedId = "";
+            resetSelection();
+
+            document.getElementById("result-message").innerText = "";
+
+            // ヒント関係を初期化
+            document.getElementById("hint-btn").style.display = "none";
+            document.getElementById("character-message").style.display = "none";
+            document.getElementById("custom-keypad").style.display = "none";
             activeInputId = null;
         }
         
