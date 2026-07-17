@@ -1,6 +1,8 @@
 let currentProblem = 0;
 let currentUnit = 1;
 let mistakeCount = [];
+let currentProblemPage = 0;
+const problemsPerPage = 3;
 
 function getCurrentProblem() {
     return unitData[currentUnit - 1].problems[currentProblem];
@@ -16,6 +18,17 @@ const unitData = [
         problems: [
             {
                 type:"problem",
+                text:"6×4をもとめましょう。",
+                hint:"6のだんをおもいだそう。",
+                style:"normal",
+                left:6,
+                right:4,
+                answer:24,
+                difficulty:1,
+            },
+
+            {
+                type:"problem",
                 text:"7×8をもとめましょう。",
                 hint:"7のだんをおもいだそう。",
                 style:"normal",
@@ -24,24 +37,61 @@ const unitData = [
                 answer:56,
                 difficulty:1,
             },
+
             {
-                text:"9×6をもとめましょう。",
-                hint:"9のだんをおもいだそう。",
-                style:"normal",
-                left:9,
-                right:6,
-                answer:54,
-                difficulty:3,
-            },
-            {
-                text:"8×4をもとめましょう。",
+                type:"problem",
+                text:"8×6をもとめましょう。",
                 hint:"8のだんをおもいだそう。",
                 style:"normal",
                 left:8,
-                right:4,
-                answer:32,
+                right:6,
+                answer:48,
+                difficulty:2,
+            },
+
+            {
+                type:"problem",
+                text:"9×7をもとめましょう。",
+                hint:"9のだんをおもいだそう。",
+                style:"normal",
+                left:9,
+                right:7,
+                answer:63,
+                difficulty:2,
+            },
+
+            {
+                type:"problem",
+                text:"4×9をもとめましょう。",
+                hint:"4のだんをおもいだそう。",
+                style:"normal",
+                left:4,
+                right:9,
+                answer:36,
+                difficulty:2,
+            },
+
+            {
+                type:"problem",
+                text:"8×8をもとめましょう。",
+                hint:"8のだんをおもいだそう。",
+                style:"normal",
+                left:8,
+                right:8,
+                answer:64,
                 difficulty:3,
-            }
+            },
+
+            {
+                type:"problem",
+                text:"9×9をもとめましょう。",
+                hint:"9のだんをおもいだそう。",
+                style:"normal",
+                left:9,
+                right:9,
+                answer:81,
+                difficulty:3,
+            },
         ]
     },
 
@@ -79,7 +129,139 @@ const unitData = [
                     B:[8,3,24,4,3,12],
                     C:[6,3,18,6,3,18]
                 }
+            },
+            {
+                type: "problem",
+                text: "11×3をならった九九をつかってもとめましょう。",
+                hint: "11を2つにわけて、それぞれ九九を計算してからたし算しよう。",
+                style: "split-multiplication",
+
+                optionsTitle: "1. 11を2つにわけてみよう",
+
+                drawA:'<img src="img/11.1.png" class="option-image">',
+                drawB:'<img src="img/11.2.png" class="option-image">',
+                drawC:'<img src="img/11.3.png" class="option-image">',
+
+                answers:{
+                    A:[10,3,30,1,3,3],
+                    B:[6,3,18,5,3,15],
+                    C:[8,3,24,3,3,9]
+                }
+            },
+            {
+                type: "problem",
+                text: "12×3をならった九九をつかってもとめましょう。",
+                hint: "12を2つにわけて、それぞれ九九を計算してからたし算しよう。",
+                style: "split-multiplication",
+
+                optionsTitle: "1. 12を2つにわけてみよう",
+
+                drawA:'<img src="img/12.1.png" class="option-image">',
+                drawB:'<img src="img/12.2.png" class="option-image">',
+                drawC:'<img src="img/12.3.png" class="option-image">',
+
+                answers:{
+                    A:[6,3,18,6,3,18],
+                    B:[8,3,24,4,3,12],
+                    C:[2,3,6,10,3,30]
+                }
+            },
+            {
+                type: "problem",
+                text: "13×3をならった九九をつかってもとめましょう。",
+                hint: "13を2つにわけて、それぞれ九九を計算してからたし算しよう。",
+                style: "split-multiplication",
+
+                optionsTitle: "1. 13を2つにわけてみよう",
+
+                drawA:'<img src="img/13.1.png" class="option-image">',
+                drawB:'<img src="img/13.2.png" class="option-image">',
+                drawC:'<img src="img/13.3.png" class="option-image">',
+
+                answers:{
+                    A:[10,3,30,3,3,9],
+                    B:[6,3,18,7,3,21],
+                    C:[5,3,15,8,3,24]
+                }
+            },
+
+            {
+                type: "problem",
+                text: "14×3をならった九九をつかってもとめましょう。",
+                hint: "14を2つにわけて、それぞれ九九を計算してからたし算しよう。",
+                style: "split-multiplication",
+
+                optionsTitle: "1. 14を2つにわけてみよう",
+
+                drawA:'<img src="img/14.1.png" class="option-image">',
+                drawB:'<img src="img/14.2.png" class="option-image">',
+                drawC:'<img src="img/14.3.png" class="option-image">',
+
+                answers:{
+                    A:[6,3,18,8,3,24],
+                    B:[4,3,12,10,3,30],
+                    C:[7,3,21,7,3,21]
+                }
+            },
+
+            {
+                type: "problem",
+                text: "15×3をならった九九をつかってもとめましょう。",
+                hint: "15を2つにわけて、それぞれ九九を計算してからたし算しよう。",
+                style: "split-multiplication",
+
+                optionsTitle: "1. 15を2つにわけてみよう",
+
+                drawA:'<img src="img/15.1.png" class="option-image">',
+                drawB:'<img src="img/15.2.png" class="option-image">',
+                drawC:'<img src="img/15.3.png" class="option-image">',
+
+                answers:{
+                    A:[7,3,21,8,3,24],
+                    B:[10,3,30,5,3,15],
+                    C:[9,3,27,6,3,18]
+                }
+            },
+
+            {
+                type: "problem",
+                text: "16×3をならった九九をつかってもとめましょう。",
+                hint: "16を2つにわけて、それぞれ九九を計算してからたし算しよう。",
+                style: "split-multiplication",
+
+                optionsTitle: "1. 16を2つにわけてみよう",
+
+                drawA:'<img src="img/16.1.png" class="option-image">',
+                drawB:'<img src="img/16.2.png" class="option-image">',
+                drawC:'<img src="img/16.3.png" class="option-image">',
+
+                answers:{
+                    A:[7,3,21,9,3,27],
+                    B:[8,3,24,8,3,24],
+                    C:[10,3,30,6,3,18]
+                }
+            },
+
+            {
+                type: "problem",
+                text: "17×3をならった九九をつかってもとめましょう。",
+                hint: "17を2つにわけて、それぞれ九九を計算してからたし算しよう。",
+                style: "split-multiplication",
+
+                optionsTitle: "1. 17を2つにわけてみよう",
+
+                drawA:'<img src="img/17.1.png" class="option-image">',
+                drawB:'<img src="img/17.2.png" class="option-image">',
+                drawC:'<img src="img/17.3.png" class="option-image">',
+
+                answers:{
+                    A:[10,3,30,7,3,21],
+                    B:[9,3,27,8,3,24],
+                    C:[8,3,24,9,3,27]
+                }
             }
+
+
         ]
     },
 
@@ -1095,6 +1277,7 @@ function openUnit(number){
 
     // 現在の単元番号を保存
     currentUnit = number;
+    currentProblemPage = 0;
     mistakeCount = new Array(getCurrentUnit().problems.length).fill(0);
 
     // メニュー画面を非表示
@@ -1119,21 +1302,22 @@ function openUnit(number){
 function createProblemList() {
 
     const list = document.getElementById("problem-list");
-
-    // 一度中身を空にする
-    list.innerHTML = "";
-
-    // 現在の単元の問題を取得
     const unit = getCurrentUnit();
     const problems = unit.problems;
 
-    // 問題数だけボタンを作る
-    for (let i = 0; i < problems.length; i++) {
+    list.innerHTML = "";
+
+    const startIndex = currentProblemPage * problemsPerPage;
+    const endIndex = Math.min(
+        startIndex + problemsPerPage,
+        problems.length
+    );
+
+    for (let i = startIndex; i < endIndex; i++) {
 
         const button = document.createElement("button");
 
         button.className = "problem-button";
-
         button.innerText = "もんだい " + (i + 1);
 
         button.onclick = function () {
@@ -1143,6 +1327,35 @@ function createProblemList() {
         list.appendChild(button);
     }
 
+    updateProblemPageButtons();
+}
+function changeProblemPage(step) {
+
+    const problems = getCurrentUnit().problems;
+    const totalPages = Math.ceil(problems.length / problemsPerPage);
+    const nextPage = currentProblemPage + step;
+
+    if (nextPage < 0 || nextPage >= totalPages) {
+        return;
+    }
+
+    currentProblemPage = nextPage;
+    createProblemList();
+}
+function updateProblemPageButtons() {
+
+    const problems = getCurrentUnit().problems;
+    const totalPages = Math.ceil(problems.length / problemsPerPage);
+
+    const prevButton = document.getElementById("problem-page-prev");
+    const nextButton = document.getElementById("problem-page-next");
+    const pageInfo = document.getElementById("problem-page-info");
+
+    prevButton.disabled = currentProblemPage === 0;
+    nextButton.disabled = currentProblemPage >= totalPages - 1;
+
+    pageInfo.innerText =
+        `${currentProblemPage + 1} / ${totalPages}`;
 }
 // 問題を開く
 function openProblem(index){

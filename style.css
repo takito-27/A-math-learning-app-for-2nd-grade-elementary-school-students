@@ -292,6 +292,29 @@ input {
 }
 
 /* =========================================================
+   問題選択画面：ページ切り替え
+========================================================= */
+
+.problem-page-navigation{
+    width:80%;
+    margin:30px auto 0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:25px;
+}
+
+#problem-page-info{
+    min-width:70px;
+    font-size:1.2rem;
+    font-weight:bold;
+}
+
+.problem-page-navigation button:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+}
+/* =========================================================
    5. 問題画面
 ========================================================= */
 #problem-screen{
