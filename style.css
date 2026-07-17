@@ -734,21 +734,39 @@ input {
     gap: 12px;
     min-height: 50px;
 }
+.answer-result-row {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 65px;
+    margin-top: 15px;
+}
+
+#result-message {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    min-height: 48px;
+    line-height: 48px;
+}
 
 #hint-btn {
+    position: absolute;
+    right: calc(50% + 75px);
+
     background-color: #ffb347;
     color: white;
     border: none;
     border-radius: 12px;
+
     padding: 8px 18px;
     font-size: 18px;
     font-weight: bold;
+
     cursor: pointer;
     box-shadow: 0 3px 0 #d88722;
-            position: relative;
-    left: -120px;   /* 左へ移動 */
-    top: 35px;      /* 少し下へ */
-            margin-right: 15px;
 }
 
 #hint-btn:hover {
