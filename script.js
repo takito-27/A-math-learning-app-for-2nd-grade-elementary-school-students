@@ -324,6 +324,9 @@ const unitData = [
         }
         document.getElementById("problem-stars").textContent = stars;
     }
+    function hintDisplay() {
+        document.getElementById("character-message").style.display = "flex";
+    }
 
     function updateDisplay() {
         
