@@ -1020,10 +1020,16 @@ const unitData = [
 
                 }, 2000);
 
-            }else{
+           }else{
                 mistakeCount[currentProblem]++;
                 res.innerText = "ちがうよ！";
                 res.style.color = "blue";
+
+                // 間違えたときはヒントボタンだけ表示
+                document.getElementById("hint-btn").style.display = "inline-block";
+
+                // キャラクターとヒント文はまだ表示しない
+                document.getElementById("character-message").style.display = "none";
             }
         return;
         }
