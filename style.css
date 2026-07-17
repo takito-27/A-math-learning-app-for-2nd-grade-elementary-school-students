@@ -745,7 +745,10 @@ input {
     font-weight: bold;
     cursor: pointer;
     box-shadow: 0 3px 0 #d88722;
-
+            position: relative;
+    left: -120px;   /* 左へ移動 */
+    top: 35px;      /* 少し下へ */
+            margin-right: 15px;
 }
 
 #hint-btn:hover {
