@@ -126,15 +126,6 @@
             </div>
         </div>
 
-    
-
-        <div class="result-row">
-            <div id="result-message"></div>
-            <button id="hint-btn" onclick="hintDisplay()" style="display:none;">
-                ヒント
-            </button>
-        </div>
-
         <div id="options-section">
             <hr>
             <p id="options-instruction"></p>
@@ -175,7 +166,18 @@
         </div>
 
         <button class="btn" style="background:#51cf66; color:white; width:100%; font-size:1.5rem;" onclick="checkAnswer()">こたえあわせ！！</button>
-        <div id="result-message" style="font-size:2rem; font-weight:bold; margin-top:15px;"></div>
+        <div class="result-row">
+            <button
+                id="hint-btn"
+                type="button"
+                onclick="hintDisplay()"
+                style="display:none;"
+                >
+                ヒント
+            </button>
+            <div id="result-message"></div>
+            <div class="result-row-spacer"></div>
+        </div>
     </div>
 </div>
 <div id="screen-result" class="screen">
