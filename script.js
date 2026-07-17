@@ -1077,7 +1077,7 @@ function checkNormalAnswer(data){
 }
 
 function checkSplitAnswer(data){
-    let expected = q.answers[selectedId];
+    let expected = data.answers[selectedId];
     const v0 = document.getElementById('v0').value.trim();
     const v1 = document.getElementById('v1').value.trim();
     const v2 = document.getElementById('v2').value.trim();
