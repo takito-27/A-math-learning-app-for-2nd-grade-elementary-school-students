@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>いろいろな計算</title>
+    
+</head>
+<body>
+
+<div class="container">
+   <div id="cover-screen" class="cover-page">
+        <button id="help-btn" class="help-btn" onclick="showHelp()">
+            つかいかた
+        </button>
+        <div class="cover-content">
+
+            <div class="cover-image">
+
+                <img src="img/character.png" alt="キャラクター" class="cover-character">
+
+            </div>
+
+            <div class="cover-text">
+
+                <div id="display-grade" class="grade-title">
+                    2年生
+                </div>
+
+            <h1 id="display-main-title" class="main-title">
+                いろいろな計算
+            </h1>
+
+            <p class="cover-message">
+                かけ算をして、答えを入れよう！
+            </p>
+
+            <button class="start-btn" onclick="showMenu()">
+                はじめる！
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- 使い方画面 -->
+<div id="help-screen" class="help-screen">
+
+    <div class="help-page-header">
+       
+        <h1 class="help-page-title">
+            つかいかた
+        </h1>
+    </div>
+
+    <main class="help-page-content">
+
+        <section class="help-card">
+            <h2 class="help-card-title">
+                この教材について
+            </h2>
+
+            <p class="help-description">
+                この教材では、かけ算の問題に取り組みながら、
+                九九を使った計算や、数を分けて考える方法を学びます。
+            </p>
+
+            <p class="help-description">
+                「はじめる！」を押したあとに、
+                学習したい単元と問題を選んでください。
+            </p>
+        </section>
+
+
+        <section class="help-card">
+            <h2 class="help-card-title">
+                問題の進め方
+            </h2>
+
+            <div class="help-step-list">
+
+                <div class="help-step">
+                    <span class="help-step-number">1</span>
+                    <p>答えを入れる場所をタップします。</p>
+                </div>
+
+                <div class="help-step">
+                    <span class="help-step-number">2</span>
+                    <p>画面の下に表示されるテンキーで数字を入力します。</p>
+                </div>
+
+                <div class="help-step">
+                    <span class="help-step-number">3</span>
+                    <p>入力が終わったら「答え合わせ！！」を押します。</p>
+                </div>
+
+                <div class="help-step">
+                    <span class="help-step-number">4</span>
+                    <p>間違えたときは「ヒント」を押します。</p>
+                </div>
+
+            </div>
+        </section>
+
+
+        <section class="help-card keypad-help-card">
+            <h2 class="help-card-title">
+                テンキーの使い方
+            </h2>
+
+            <p class="help-description help-center-text">
+                答えを入れる場所をタップすると、
+                画面の下にテンキーが表示されます。
+            </p>
+
+            <div class="keypad-help-image-wrapper">
+                <img
+                    src="img/keypad-guide.png"
+                    alt="テンキーの操作説明"
+                    class="keypad-help-image">
+            </div>
+
+            <div class="keypad-help-list">
+
+                <article class="keypad-help-item">
+                    <div class="keypad-help-symbol">①</div>
+
+                    <div class="keypad-help-text">
+                        <h3>数字を入れる</h3>
+                        <p>
+                            押した数字が、選んでいる入力欄に入ります。
+                        </p>
+                    </div>
+                </article>
+
+
+                <article class="keypad-help-item">
+                    <div class="keypad-help-symbol">②</div>
+
+                    <div class="keypad-help-text">
+                        <h3>入力する場所を動かす</h3>
+                        <p>
+                            数字を入れる位置を左または右へ動かします。
+                        </p>
+                    </div>
+                </article>
+
+
+                <article class="keypad-help-item">
+                    <div class="keypad-help-symbol">③</div>
+
+                    <div class="keypad-help-text">
+                        <h3>数字を消す</h3>
+                        <p>
+                            入力する場所の左側にある数字を1つ消します。
+                        </p>
+                    </div>
+                </article>
+
+
+                <article class="keypad-help-item">
+                    <div class="keypad-help-symbol">④</div>
+
+                    <div class="keypad-help-text">
+                        <h3>入力を終える</h3>
+                        <p>
+                            テンキーを閉じて入力を終了します。
+                        </p>
+                    </div>
+                </article>
+
+
+                <article class="keypad-help-item">
+                    <div class="keypad-help-symbol outside-symbol">
+                        ⑤
+                    </div>
+
+                    <div class="keypad-help-text">
+                        <h3>テンキーの外をタップする</h3>
+                        <p>
+                            テンキーの外側をタップしても閉じられます。
+                        </p>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+
+        <button
+            type="button"
+            class="help-bottom-button"
+            onclick="closeHelp()">
+            表紙にもどる
+        </button>
+
+    </main>
+
+</div>
+
+
+
+<div id="screen-menu" class="screen">
+        <div class="nav-bar">
+            <button class="back-btn" onclick="goToStart()">← もどる</button>
+        </div>
+        <div class="menu-container">
+            <div class="menu-item"
+                 onclick="openUnit(1)"><div class="triangle"></div>九九の計算①</div>
+            <div class="menu-item" 
+                 onclick="openUnit(2)"><div class="triangle"></div>九九の計算②</div>
+            <div class="menu-item" 
+                 onclick="openUnit(3)"><div class="triangle"></div>かけ算のもんだい①</div>
+            <div class="menu-item" 
+                 onclick="openUnit(4)"><div class="triangle"></div>かけ算のもんだい②</div>
+        </div>
+</div>
+<div id="screen-problem-select" class="screen">
+    <div class="nav-bar">
+        <button class="back-btn"
+                onclick="showMenu()">
+                   ← もどる
+        </button>
+    </div>
+    <h2 id="unit-title" class="page-title">
+            九九の計算①
+    </h2>
+          
+    <div id="problem-list">
+
+    </div>
+    <div class="problem-page-navigation">
+        <button
+            id="problem-page-prev"
+            class="btn btn-blue"
+            onclick="changeProblemPage(-1)">
+                ← 前へ
+        </button>
+
+        <span id="problem-page-info"></span>
+
+        <button
+            id="problem-page-next"
+            class="btn btn-blue"
+            onclick="changeProblemPage(1)">
+                次へ →
+        </button>
+
+    </div>
+</div>
+
+
+<div class="question-box" id="question-text"></div>
+    <div id="problem-screen">
+        <div class="nav-buttons">
+            <div class="nav-left-btns">
+                <button class="btn btn-blue"
+                onclick="showMenu()">
+                ⌂
+                </button>
+                <button class="btn btn-blue" onclick="backToProblemSelect()">← もどる</button>
+            </div>
+            <span id="page-info"></span>
+            <button class="btn btn-blue" onclick="moveQuestion(1)">つぎへ →</button>
+        </div>
+     
+        <div id="unit-name" class="page-title">
+            九九の計算①
+        </div>
+           
+        <div class="problem-header">
+            <div id="problem-title" class="problem-title">
+                だい1もん
+            </div>
+            <div id="problem-stars" class="problem-stars">
+            </div>
+        </div>
+        <div class="problem-content">
+            <div id="problem-text" class="problem-text">
+            </div>
+        </div>
+
+
+        <div id="options-section">
+            <hr>
+            <p id="options-instruction"></p>
+            <div class="options-container">
+                <div class="option-card" id="opt-A" onclick="selectOption('A')"><div id="draw-A"></div></div>
+                <div class="option-card" id="opt-B" onclick="selectOption('B')"><div id="draw-B"></div></div>
+                <div class="option-card" id="opt-C" onclick="selectOption('C')"><div id="draw-C"></div></div>
+            </div>
+        </div>
+
+        <div id="formula-section-container" class="formula-section">
+            <p id="formula-instruction"></p>
+            <div id="formula-inputs"></div>
+        </div>
+
+        <div id="custom-keypad" class="keypad-container">
+            <div class="keypad-grid">
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('left')">◀</button>
+                <div style="visibility: hidden;"></div>
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('right')">▶</button>
+                
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('7')">7</button>
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('8')">8</button>
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('9')">9</button>
+                
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('4')">4</button>
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('5')">5</button>
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('6')">6</button>
+                
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('1')">1</button>
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('2')">2</button>
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('3')">3</button>
+                
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('backspace')">⌫</button>
+                <button class="key-btn" onpointerdown="event.preventDefault(); pressKey('0')">0</button>
+                <button class="key-btn enter-btn" onpointerdown="event.preventDefault(); pressKey('enter')">↵</button>
+            </div>
+        </div>
+
+        <button
+            class="btn"
+            style="background:#51cf66; color:white; width:100%; font-size:1.5rem;"
+            onclick="checkAnswer()"
+        >
+            こたえあわせ！！
+        </button>
+
+        <div
+            style="
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:20px;
+            margin-top:15px;
+            text-align:center;
+            "
+        >
+        <div
+            id="feedback-icon"
+            style="
+                font-size:2rem;
+                width:40px;
+                height:40px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+            "
+        ></div>
+        <div
+            id="feedback-message"
+            style="font-size:1.5rem; font-weight:bold;"
+        ></div>
+        <button
+            id="hint-btn"
+            type="button"
+            class="btn"
+            style="display:none; background:#ff922b; color:white;"
+            onclick="toggleHint()"
+        >
+            ヒント
+        </button>
+
+    <div
+        id="result-message"
+        style="font-size:2rem; font-weight:bold;"
+    ></div>
+</div>
+
+<!-- ヒントウィンドウ -->
+<div
+    id="hint-modal"
+    class="hint-modal"
+    aria-hidden="true"
+    onclick="closeHintFromBackground(event)"
+>
+    <div
+        class="hint-window"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="hint-window-title"
+    >
+        <div class="hint-window-header">
+
+            <h2 id="hint-window-title">
+                ヒント
+            </h2>
+
+            <button
+                type="button"
+                class="hint-close-icon"
+                onclick="closeHint()"
+                aria-label="ヒントを閉じる"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <!-- JavaScriptからヒント内容を入れる場所 -->
+        <div
+            id="hint-display"
+            class="hint-window-content"
+        ></div>
+
+        <button
+            type="button"
+            class="hint-close-button"
+            onclick="closeHint()"
+        >
+            とじる
+        </button>
+    </div>
+</div>
+    </div>
+</div>
+<div id="screen-result" class="screen">
+
+    <h2 class="page-title">
+        けっか
+    </h2>
+
+    <div id="total-result" class="total-result">
+
+    </div>
+
+<div id="result-area">
+
+</div>
+    <button class="btn btn-green"
+        onclick="retryUnit()">
+    🔄 もう一度チャレンジ
+    </button>
+    <button class="btn btn-blue"
+            onclick="showMenu()">
+        メニューにもどる
+    </button>
+
+</div>
+
+
+<script src="script.js"></script>
+</body>
+</html>
