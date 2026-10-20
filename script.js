@@ -405,12 +405,15 @@ const unitData = [
                 
         const instructionEl = document.getElementById('formula-instruction');
         instructionEl.style.display = "block";
+        
         instructionEl.innerHTML = `
-            <strong>2. わけた2つの数を計算しよう</strong>
+            <strong>② わけた図を見て、式をつくりましょう。</strong>
             <div style="margin-top:8px; line-height:1.8;">
-                ① わけた1つ目の数に、もとの式のかける数をかけよう。<br>
-                ② わけた2つ目の数にも、同じ数をかけよう。<br>
-                ③ 2つのかけ算の答えをたそう。
+            それぞれの数を、かけ算でもとめましょう。
+            </div>
+            
+            <div style="margin-top:12px;">
+                <strong>③ 2つの答えをたして、ぜんぶの数をもとめましょう。</strong>
             </div>
         `;
 
@@ -431,6 +434,8 @@ const unitData = [
             <input class="formula-input" type="text" id="vAns" inputmode="none" onclick="openKeypad('vAns')">
         </div>`;
         document.getElementById('formula-inputs').innerHTML = html;
+        // 図を選ぶまでは、計算式を表示しない
+        document.getElementById('formula-section-container').style.display = "none";
             
     }
     function showGridTableProblem(data){
@@ -950,10 +955,18 @@ const unitData = [
     }
 
     function selectOption(id) {
-        selectedId = id; resetSelection();
-        document.getElementById('opt-' + id).classList.add('selected');
-    }
+        selectedId = id;
+        resetSelection();
 
+        document.getElementById('opt-' + id).classList.add('selected');
+
+        // 図を選んだら、計算式を表示する
+        const formulaContainer = document.getElementById('formula-section-container');
+
+        if (getCurrentProblem().style === "split-multiplication" && formulaContainer) {
+            formulaContainer.style.display = "block";
+        }
+    }
     function resetSelection() {
         ['A', 'B', 'C'].forEach(id => {
             const el = document.getElementById('opt-' + id);
