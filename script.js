@@ -117,6 +117,8 @@ const unitData = [
                 text: "11×2を、ならった九九をつかってもとめましょう。",
                 hint: "11を2つの数にわけよう。それぞれの数に2をかけて、2つの答えをたそう。",
                 style: "split-multiplication",
+                originalColumns: 11,
+                originalRows: 2,
 
                 optionsTitle: "1. 11を2つの数にわけてみよう",
 
@@ -394,6 +396,33 @@ const unitData = [
                 <input class="formula-input"id="vAns"type="text"inputmode="none"onclick="openKeypad('vAns')">
                 </div>`;
     }
+
+    function createOriginalArray(columns, rows) {
+        const container = document.createElement("div");
+
+        container.style.display = "grid";
+        container.style.gridTemplateColumns = `repeat(${columns}, 22px)`;
+        container.style.gap = "5px";
+        container.style.justifyContent = "center";
+        container.style.width = "max-content";
+        container.style.maxWidth = "100%";
+        container.style.margin = "16px auto";
+
+        for (let i = 0; i < columns * rows; i++) {
+            const cell = document.createElement("div");
+
+            cell.style.width = "22px";
+            cell.style.height = "22px";
+            cell.style.backgroundColor = "#79c7ec";
+            cell.style.border = "1px solid #3989b7";
+            cell.style.borderRadius = "4px";
+
+            container.appendChild(cell);
+        }
+
+        return container;
+    }
+
     function showSplitProblem(data){
         document.getElementById('options-section').style.display = "block";
         document.querySelector('.options-container').style.display = "flex";
@@ -401,7 +430,21 @@ const unitData = [
         document.getElementById('draw-A').innerHTML = data.drawA;
         document.getElementById('draw-B').innerHTML = data.drawB;
         document.getElementById('draw-C').innerHTML = data.drawC;
-                
+        // 分ける前のアレイ図を表示
+        const originalSection = document.getElementById("original-array-section");
+        const originalArray = document.getElementById("original-array");
+
+        originalArray.innerHTML = "";
+
+        if (data.originalColumns && data.originalRows) {
+            originalSection.style.display = "block";
+
+            originalArray.appendChild(
+                createOriginalArray(data.originalColumns, data.originalRows)
+            );
+        } else {
+            originalSection.style.display = "none";
+        }        
                 
         const instructionEl = document.getElementById('formula-instruction');
         instructionEl.style.display = "block";
