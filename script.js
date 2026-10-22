@@ -401,7 +401,8 @@ const unitData = [
         const container = document.createElement("div");
 
         container.style.display = "grid";
-        container.style.gridTemplateColumns = `repeat(${columns}, 22px)`;
+        const cellSize = `min(42px, calc((90vw - ${(columns - 1) * 5}px) / ${columns}))`;
+        container.style.gridTemplateColumns = `repeat(${columns}, ${cellSize})`;
         container.style.gap = "5px";
         container.style.justifyContent = "center";
         container.style.width = "max-content";
@@ -412,8 +413,8 @@ const unitData = [
         for (let i = 0; i < columns * rows; i++) {
             const cell = document.createElement("div");
 
-            cell.style.width = "22px";
-            cell.style.height = "22px";
+            cell.style.width = "100%";
+            cell.style.aspectRatio = "1 / 1";
             cell.style.border = "1px solid #3989b7";
             cell.style.borderRadius = "4px";
             cell.style.backgroundColor = "#79c7ec";
