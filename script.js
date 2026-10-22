@@ -405,27 +405,63 @@ const unitData = [
         container.style.gap = "5px";
         container.style.justifyContent = "center";
         container.style.width = "max-content";
-        container.style.maxWidth = "100%";
         container.style.margin = "16px auto";
+
+        const cells = [];
 
         for (let i = 0; i < columns * rows; i++) {
             const cell = document.createElement("div");
 
             cell.style.width = "22px";
             cell.style.height = "22px";
-            cell.style.backgroundColor = "#79c7ec";
             cell.style.border = "1px solid #3989b7";
             cell.style.borderRadius = "4px";
+            cell.style.backgroundColor = "#79c7ec";
 
             container.appendChild(cell);
+            cells.push(cell);
         }
+
+        // 分ける位置を記録する
+        container.dataset.splitPosition = "";
+
+        function divideArray(position) {
+            container.dataset.splitPosition = String(position);
+
+            cells.forEach((cell, index) => {
+                const column = index % columns;
+
+                if (column < position) {
+                    cell.style.backgroundColor = "#79c7ec";
+                } else {
+                    cell.style.backgroundColor = "#a6d974";
+                }
+                
+            });
+        }
+
+        // どの列で分けるかを選ぶ
+        cells.forEach((cell, index) => {
+            cell.style.cursor = "pointer";
+
+            cell.addEventListener("click", () => {
+                const position = (index % columns) + 1;
+
+                // すべてを片側に分けることはできない
+                if (position >= columns) return;
+
+                divideArray(position);
+            });
+        });
 
         return container;
     }
 
     function showSplitProblem(data){
         document.getElementById('options-section').style.display = "block";
-        document.querySelector('.options-container').style.display = "flex";
+        // この問題ではA・B・Cの選択肢を使わない
+        document.querySelector('.options-container').style.display = "none";
+        document.getElementById('options-instruction').style.display = "none";
         document.getElementById('options-instruction').innerHTML = `<strong>${data.optionsTitle}</strong>`;
         document.getElementById('draw-A').innerHTML = data.drawA;
         document.getElementById('draw-B').innerHTML = data.drawB;
