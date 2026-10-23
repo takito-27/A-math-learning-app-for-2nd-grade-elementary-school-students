@@ -401,12 +401,19 @@ const unitData = [
         const container = document.createElement("div");
 
         container.style.display = "grid";
-        const cellSize = `min(42px, calc((90vw - ${(columns - 1) * 5}px) / ${columns}))`;
-        container.style.gridTemplateColumns = `repeat(${columns}, ${cellSize})`;
+        // アレイ図全体の幅を設定
+        container.style.width = "100%";
+        container.style.maxWidth = "650px";
+        container.style.boxSizing = "border-box";
+
+        // 列数に合わせて四角の幅を均等にする
+        container.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
+
+        // 四角の間隔
         container.style.gap = "5px";
-        container.style.justifyContent = "center";
-        container.style.width = "max-content";
-        container.style.margin = "16px auto";
+
+        // アレイ図を中央に配置
+        container.style.margin = "20px auto";
 
         const cells = [];
 
@@ -426,20 +433,27 @@ const unitData = [
         // 分ける位置を記録する
         container.dataset.splitPosition = "";
 
-        function divideArray(position) {
-            container.dataset.splitPosition = String(position);
+       function divideArray(position) {
+        container.dataset.splitPosition = String(position);
+        cells.forEach((cell, index) => {
+            const column = index % columns;
 
-            cells.forEach((cell, index) => {
-                const column = index % columns;
+            if (column < position) {
+                cell.style.backgroundColor = "#79c7ec";
+            } else {
+                cell.style.backgroundColor = "#a6d974";
+            }
+        });
 
-                if (column < position) {
-                    cell.style.backgroundColor = "#79c7ec";
-                } else {
-                    cell.style.backgroundColor = "#a6d974";
-                }
-                
-            });
+        // 図を分けたら計算式を表示する
+        const formulaContainer = document.getElementById(
+            "formula-section-container"
+        );
+
+        if (formulaContainer) {
+            formulaContainer.style.display = "block";
         }
+    }
 
         // どの列で分けるかを選ぶ
         cells.forEach((cell, index) => {
