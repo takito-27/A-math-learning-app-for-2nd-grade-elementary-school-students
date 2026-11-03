@@ -311,23 +311,32 @@ const unitData = [
                 </div>`;
     }
 
+    
     function createOriginalArray(columns, rows) {
         const container = document.createElement("div");
 
         container.style.display = "grid";
-        // アレイ図全体の幅を設定
         container.style.width = "100%";
         container.style.maxWidth = "650px";
         container.style.boxSizing = "border-box";
-
-        // 列数に合わせて四角の幅を均等にする
-        container.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
-
-        // 四角の間隔
+        container.style.gridTemplateColumns =
+            `repeat(${columns}, minmax(0, 1fr))`;
         container.style.gap = "5px";
-
-        // アレイ図を中央に配置
         container.style.margin = "20px auto";
+
+        // 現在の問題に設定された最大分割数
+        const data = getCurrentProblem();
+        const maxParts = Math.max(
+            2,
+            Math.min(columns, Number(data.maxParts) || 2)
+        );
+
+        const colors = [
+            "#79c7ec",
+            "#a6d974",
+            "#f7c879",
+            "#c5a8eb"
+        ];
 
         const cells = [];
 
@@ -336,55 +345,84 @@ const unitData = [
 
             cell.style.width = "100%";
             cell.style.aspectRatio = "1 / 1";
+            cell.style.boxSizing = "border-box";
             cell.style.border = "1px solid #3989b7";
             cell.style.borderRadius = "4px";
-            cell.style.backgroundColor = "#79c7ec";
+            cell.style.backgroundColor = colors[0];
+            cell.style.cursor = "pointer";
 
             container.appendChild(cell);
             cells.push(cell);
         }
 
-        // 分ける位置を記録する
+        // 複数の分割位置を保存する
+        let splitPositions = [];
+
+        container.dataset.splitPositions = "[]";
+
+        // 既存の2分割用の判定との互換性を維持
         container.dataset.splitPosition = "";
 
-       function divideArray(position) {
-        container.dataset.splitPosition = String(position);
-        cells.forEach((cell, index) => {
-            const column = index % columns;
+        function updateArray() {
+            splitPositions.sort((a, b) => a - b);
 
-            if (column < position) {
-                cell.style.backgroundColor = "#79c7ec";
-            } else {
-                cell.style.backgroundColor = "#a6d974";
+            container.dataset.splitPositions =
+                JSON.stringify(splitPositions);
+
+            // 2分割の場合は従来の判定を使用できる
+            container.dataset.splitPosition =
+                splitPositions.length === 1
+                    ? String(splitPositions[0])
+                    : "";
+
+            cells.forEach((cell, index) => {
+                const column = index % columns;
+
+                const groupIndex = splitPositions.filter(
+                    position => column >= position
+                ).length;
+
+                cell.style.backgroundColor =
+                    colors[groupIndex % colors.length];
+            });
+
+            const formulaContainer = document.getElementById(
+                "formula-section-container"
+            );
+
+            if (formulaContainer) {
+                // 1か所以上分けた場合に式を表示
+                formulaContainer.style.display =
+                    splitPositions.length > 0 ? "block" : "none";
             }
-        });
-
-        // 図を分けたら計算式を表示する
-        const formulaContainer = document.getElementById(
-            "formula-section-container"
-        );
-
-        if (formulaContainer) {
-            formulaContainer.style.display = "block";
         }
-    }
 
-        // どの列で分けるかを選ぶ
+        // クリックした位置で区切る
         cells.forEach((cell, index) => {
-            cell.style.cursor = "pointer";
-
             cell.addEventListener("click", () => {
                 const position = (index % columns) + 1;
 
-                // すべてを片側に分けることはできない
+                // 最後の列の後ろでは分割できない
                 if (position >= columns) return;
 
-                divideArray(position);
+                const existingIndex =
+                    splitPositions.indexOf(position);
+
+             if (existingIndex !== -1) {
+                    // 同じ位置を押すと区切りを解除
+                    splitPositions.splice(existingIndex, 1);
+                } else if (splitPositions.length < maxParts - 1) {
+                    // 上限以内なら区切りを追加
+                    splitPositions.push(position);
+                }
+
+                updateArray();
             });
         });
 
         return container;
     }
+
 
     function showSplitProblem(data){
         document.getElementById('options-section').style.display = "block";
