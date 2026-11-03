@@ -1202,11 +1202,20 @@ function closeHintFromBackground(event) {
         const res = document.getElementById('result-message');
         const hintBtn = document.getElementById('hint-btn');
         
-        if (data.style === "split-multiplication" && !selectedId) { 
-            res.innerText = "図をえらんでね！"; 
-            res.style.color = "orange";
-            hintBtn.style.display = "none"; 
-            return; 
+        // かけ算の計算①：アレイ図が分割されているか確認
+        if (data.style === "split-multiplication") {
+
+            const array = document.querySelector(
+                "#original-array [data-split-position]"
+            );
+
+            // 図がまだ分割されていない場合
+            if (!array || array.dataset.splitPosition === "") {
+                res.innerText = "図を分けてね！";
+                res.style.color = "orange";
+                hintBtn.style.display = "none";
+                return;
+            }
         }
         if(data.style === "normal"){
             if(checkNormalAnswer(data)){
