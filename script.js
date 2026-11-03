@@ -1278,64 +1278,127 @@ function checkNormalAnswer(data){
     return Number(value) === data.answer;
 }
 
-function checkSplitAnswer(data){
-    let expected = data.answers[selectedId];
-    const v0 = document.getElementById('v0').value.trim();
-    const v1 = document.getElementById('v1').value.trim();
-    const v2 = document.getElementById('v2').value.trim();
-    const v3 = document.getElementById('v3').value.trim();
-    const v4 = document.getElementById('v4').value.trim();
-    const v5 = document.getElementById('v5').value.trim();
-    const v6 = document.getElementById('v6').value.trim();
-    const v7 = document.getElementById('v7').value.trim();
-    const vAns = document.getElementById('vAns').value.trim();
 
-    let pair1 = [expected[0].toString(), expected[1].toString(), expected[2].toString()];
-    let pair2 = [expected[3].toString(), expected[4].toString(), expected[5].toString()];
-    let p1r = [pair1[1], pair1[0], pair1[2]];
-    let p2r = [pair2[1], pair2[0], pair2[2]];
+function checkSplitAnswer(data) {
+    // 現在のアレイ図を取得する
+    const array = document.querySelector(
+        "#original-array [data-split-position]"
+    );
 
-    const f1_p1 = (v0 === pair1[0] && v1 === pair1[1] && v2 === pair1[2]);
-    const f1_p1r = (v0 === p1r[0] && v1 === p1r[1] && v2 === p1r[2]);
-    const f1_p2 = (v0 === pair2[0] && v1 === pair2[1] && v2 === pair2[2]);
-    const f1_p2r = (v0 === p2r[0] && v1 === p2r[1] && v2 === p2r[2]);
+    // 図がまだ分割されていない場合
+    if (!array || array.dataset.splitPosition === "") {
+        return {
+            correct: false,
+            almost: false
+        };
+    }
 
-    const f2_p1 = (v3 === pair1[0] && v4 === pair1[1] && v5 === pair1[2]);
-    const f2_p1r = (v3 === p1r[0] && v4 === p1r[1] && v5 === p1r[2]);
-    const f2_p2 = (v3 === pair2[0] && v4 === pair2[1] && v5 === pair2[2]);
-    const f2_p2r = (v3 === p2r[0] && v4 === p2r[1] && v5 === p2r[2]);
+    // 児童が選んだ分割位置
+    const splitPosition = Number(array.dataset.splitPosition);
 
-    let multCorrect = (f1_p1 && f2_p2) || (f1_p2 && f2_p1);
-    let multAlmost = ((f1_p1 || f1_p1r) && (f2_p2 || f2_p2r)) || ((f1_p2 || f1_p2r) && (f2_p1 || f2_p1r));
-    const expectedTotal = expected[2] + expected[5];
-    let addCorrect =
+    // 元のアレイ図の列数と行数
+    const columns = Number(data.originalColumns);
+    const rows = Number(data.originalRows);
+
+    // 左側と右側の列数
+    const leftColumns = splitPosition;
+    const rightColumns = columns - splitPosition;
+
+    // それぞれのかけ算の答え
+    const leftProduct = leftColumns * rows;
+    const rightProduct = rightColumns * rows;
+
+    // 全体の数
+    const expectedTotal = columns * rows;
+
+    // 入力された値を取得
+    const values = [];
+
+    for (let i = 0; i < 8; i++) {
+        values.push(
+            document.getElementById("v" + i).value.trim()
+        );
+    }
+
+    const vAns = document.getElementById("vAns").value.trim();
+
+    // 左側と右側の正しい式
+    const pair1 = [
+        String(leftColumns),
+        String(rows),
+        String(leftProduct)
+    ];
+
+    const pair2 = [
+        String(rightColumns),
+        String(rows),
+        String(rightProduct)
+    ];
+
+    // かけ算の式が一致しているか調べる
+    function matches(input, expected, allowReverse = false) {
+        const normal =
+            input[0] === expected[0] &&
+            input[1] === expected[1] &&
+            input[2] === expected[2];
+
+        const reverse =
+            input[0] === expected[1] &&
+            input[1] === expected[0] &&
+            input[2] === expected[2];
+
+        return normal || (allowReverse && reverse);
+    }
+
+    const formula1 = values.slice(0, 3);
+    const formula2 = values.slice(3, 6);
+
+    // 左右の式を入れ替えても正解とする
+    const multCorrect =
+        (matches(formula1, pair1) && matches(formula2, pair2)) ||
+        (matches(formula1, pair2) && matches(formula2, pair1));
+
+    // かける数の順序を逆にした場合は「おしい」とする
+    const multAlmost =
         (
-            (v6 === v2 && v7 === v5) ||
-            (v6 === v5 && v7 === v2)
-        ) &&
-        Number(vAns) === expectedTotal;
+            matches(formula1, pair1, true) &&
+            matches(formula2, pair2, true)
+        ) ||
+        (
+            matches(formula1, pair2, true) &&
+            matches(formula2, pair1, true)
+        );
 
-    
-    if (multCorrect && addCorrect){
+    // たし算の判定
+    const addCorrect =
+        (
+            (values[6] === String(leftProduct) &&
+             values[7] === String(rightProduct)) ||
+            (values[6] === String(rightProduct) &&
+             values[7] === String(leftProduct))
+        ) &&
+        vAns === String(expectedTotal);
+
+    if (multCorrect && addCorrect) {
         return {
             correct: true,
             almost: false
         };
     }
 
-    if (multAlmost && addCorrect){
+    if (multAlmost && addCorrect) {
         return {
             correct: false,
             almost: true
         };
     }
 
-
     return {
         correct: false,
         almost: false
     };
 }
+
 
 function checkGridTableAnswer(data){
 
