@@ -108,144 +108,53 @@ const unitData = [
         ]
     },
 
+    
     {
         id: 3,
         title: "かけ算の計算①",
         problems: [
             {
                 type: "problem",
-                text: "11×2を、ならった九九をつかってもとめましょう。",
-                hint: "11を2つの数にわけよう。それぞれの数に2をかけて、2つの答えをたそう。",
+                text: "12×3の 計算の しかたを 考えましょう。",
+                hint: "12を 9と3、または 10と2に わけてみよう。2つの かけ算の 答えを たすと、ぜんぶの 数になるよ。",
+                style: "split-multiplication",
+                originalColumns: 12,
+                originalRows: 3
+            },
+            {
+                type: "problem",
+                text: "13×3の 計算の しかたを 考えましょう。",
+                hint: "13を 10と3に わけると、九九を つかって 計算できるかな。",
+                style: "split-multiplication",
+                originalColumns: 13,
+                originalRows: 3
+            },
+            {
+                type: "problem",
+                text: "11×2を、九九を つかって くふうして もとめましょう。",
+                hint: "11を 9と2に わけると、どんな かけ算が できるかな。",
                 style: "split-multiplication",
                 originalColumns: 11,
-                originalRows: 2,
-
-                optionsTitle: "1. 11を2つの数にわけてみよう",
-
-                drawA:'<img src="img/11.1.png" class="option-image">',
-                drawB:'<img src="img/11.2.png" class="option-image">',
-                drawC:'<img src="img/11.3.png" class="option-image">',
-
-                answers:{
-                    A:[10,2,20,1,2,2],
-                    B:[6,2,12,5,2,10],
-                    C:[8,2,16,3,2,6]
-                }
-            
+                originalRows: 2
             },
             {
                 type: "problem",
-                text: "12×3を、ならった九九をつかってもとめましょう。",
-                hint: "12を2つの数にわけよう。それぞれの数に3をかけて、2つの答えをたそう。",
+                text: "14×3を、九九を つかって くふうして もとめましょう。",
+                hint: "14を 7と7に わけてみよう。",
                 style: "split-multiplication",
-
-                optionsTitle: "1. 12を2つの数にわけてみよう",
-
-                drawA:'<img src="img/12.1.png" class="option-image">',
-                drawB:'<img src="img/12.2.png" class="option-image">',
-                drawC:'<img src="img/12.3.png" class="option-image">',
-
-                answers:{
-                    A:[6,3,18,6,3,18],
-                    B:[8,3,24,4,3,12],
-                    C:[2,3,6,10,3,30]
-                }
-            
+                originalColumns: 14,
+                originalRows: 3
             },
             {
                 type: "problem",
-                text: "13×4を、ならった九九をつかってもとめましょう。",
-                hint: "13を2つの数にわけよう。それぞれの数に4をかけて、2つの答えをたそう。",
+                text: "15×2を、九九を つかって くふうして もとめましょう。",
+                hint: "15を 8と7に わけてみよう。",
                 style: "split-multiplication",
-
-                optionsTitle: "1. 13を2つの数にわけてみよう",
-
-                drawA:'<img src="img/13.1.png" class="option-image">',
-                drawB:'<img src="img/13.2.png" class="option-image">',
-                drawC:'<img src="img/13.3.png" class="option-image">',
-
-                answers:{
-                    A:[10,4,40,3,4,12],
-                    B:[6,4,24,7,4,28],
-                    C:[5,4,20,8,4,32]
-                }
-            
-            },
-            {
-                type: "problem",
-                text: "14×5を、ならった九九をつかってもとめましょう。",
-                hint: "14を2つの数にわけよう。それぞれの数に5をかけて、2つの答えをたそう。",
-                style: "split-multiplication",
-
-                optionsTitle: "1. 14を2つの数にわけてみよう",
-
-                drawA:'<img src="img/14.1.png" class="option-image">',
-                drawB:'<img src="img/14.2.png" class="option-image">',
-                drawC:'<img src="img/14.3.png" class="option-image">',
-
-                answers:{
-                    A:[6,5,30,8,5,40],
-                    B:[4,5,20,10,5,50],
-                    C:[7,5,35,7,5,35]
-                }
-            
-            },
-            {
-                type: "problem",
-                text: "15×2を、ならった九九をつかってもとめましょう。",
-                hint: "15を2つの数にわけよう。それぞれの数に2をかけて、2つの答えをたそう。",
-            style: "split-multiplication",
-
-            optionsTitle: "1. 15を2つの数にわけてみよう",
-
-            drawA:'<img src="img/15.1.png" class="option-image">',
-            drawB:'<img src="img/15.2.png" class="option-image">',
-            drawC:'<img src="img/15.3.png" class="option-image">',
-
-            answers:{
-                A:[7,2,14,8,2,16],
-                B:[10,2,20,5,2,10],
-                C:[9,2,18,6,2,12]
+                originalColumns: 15,
+                originalRows: 2
             }
-        },
-        {
-            type: "problem",
-            text: "16×4を、ならった九九をつかってもとめましょう。",
-            hint: "16を2つの数にわけよう。それぞれの数に4をかけて、2つの答えをたそう。",
-            style: "split-multiplication",
-
-            optionsTitle: "1. 16を2つの数にわけてみよう",
-
-            drawA:'<img src="img/16.1.png" class="option-image">',
-            drawB:'<img src="img/16.2.png" class="option-image">',
-            drawC:'<img src="img/16.3.png" class="option-image">',
-
-            answers:{
-                A:[7,4,28,9,4,36],
-                B:[8,4,32,8,4,32],
-                C:[10,4,40,6,4,24]
-            }
-        },
-        {
-            type: "problem",
-            text: "17×5を、ならった九九をつかってもとめましょう。",
-            hint: "17を2つの数にわけよう。それぞれの数に5をかけて、2つの答えをたそう。",
-            style: "split-multiplication",
-
-            optionsTitle: "1. 17を2つの数にわけてみよう",
-
-            drawA:'<img src="img/17.1.png" class="option-image">',
-            drawB:'<img src="img/17.2.png" class="option-image">',
-            drawC:'<img src="img/17.3.png" class="option-image">',
-
-            answers:{
-                A:[10,5,50,7,5,35],
-                B:[9,5,45,8,5,40],
-                C:[8,5,40,9,5,45]
-            }
-        }
-    ]
-},
+        ]
+    },
 
     {
         id: 4,
