@@ -119,7 +119,8 @@ const unitData = [
                 hint: "12を 9と3、または 10と2に わけてみよう。2つの かけ算の 答えを たすと、ぜんぶの 数になるよ。",
                 style: "split-multiplication",
                 originalColumns: 12,
-                originalRows: 3
+                originalRows: 3,
+                maxParts: 2
             },
             {
                 type: "problem",
@@ -127,7 +128,8 @@ const unitData = [
                 hint: "13を 10と3に わけると、九九を つかって 計算できるかな。",
                 style: "split-multiplication",
                 originalColumns: 13,
-                originalRows: 3
+                originalRows: 3,
+                maxParts: 2
             },
             {
                 type: "problem",
@@ -135,7 +137,8 @@ const unitData = [
                 hint: "11を 9と2に わけると、どんな かけ算が できるかな。",
                 style: "split-multiplication",
                 originalColumns: 11,
-                originalRows: 2
+                originalRows: 2,
+                maxParts: 2
             },
             {
                 type: "problem",
@@ -143,7 +146,8 @@ const unitData = [
                 hint: "14を 7と7に わけてみよう。",
                 style: "split-multiplication",
                 originalColumns: 14,
-                originalRows: 3
+                originalRows: 3,
+                maxParts: 3
             },
             {
                 type: "problem",
@@ -151,7 +155,8 @@ const unitData = [
                 hint: "15を 8と7に わけてみよう。",
                 style: "split-multiplication",
                 originalColumns: 15,
-                originalRows: 2
+                originalRows: 2,
+                maxParts: 4
             }
         ]
     },
