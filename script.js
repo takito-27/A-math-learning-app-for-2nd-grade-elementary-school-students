@@ -386,14 +386,13 @@ const unitData = [
                     colors[groupIndex % colors.length];
             });
 
-            const formulaContainer = document.getElementById(
-                "formula-section-container"
-            );
+            // 分割数に合わせて計算式を更新
+            const partCount = splitPositions.length + 1;
 
-            if (formulaContainer) {
-                // 1か所以上分けた場合に式を表示
-                formulaContainer.style.display =
-                    splitPositions.length > 0 ? "block" : "none";
+            if (splitPositions.length > 0) {
+                updateSplitFormula(partCount);
+            } else {
+                updateSplitFormula(0);
             }
         }
 
@@ -457,8 +456,8 @@ const unitData = [
             `;
         }
 
-    // 分割数に応じて、たし算の式を生成
-        html += `<div class="formula-row">`;
+        // 分割数に応じて、たし算の式を生成
+            html += `<div class="formula-row">`;
 
         for (let i = 0; i < partCount; i++) {
             if (i > 0) html += " + ";
@@ -518,29 +517,12 @@ const unitData = [
             </div>
             
             <div style="margin-top:12px;">
-                <strong>③ 2つの答えをたして、ぜんぶの数をもとめましょう。</strong>
+                <strong>③ それぞれの答えをたして、ぜんぶの数をもとめましょう。</strong>
             </div>
         `;
 
-        let html = `
-        <div class="formula-row">
-            <input class="formula-input" type="text" id="v0" inputmode="none" onclick="openKeypad('v0')"> × 
-            <input class="formula-input" type="text" id="v1" inputmode="none" onclick="openKeypad('v1')"> = 
-            <input class="formula-input" type="text" id="v2" inputmode="none" onclick="openKeypad('v2')">
-        </div>
-        <div class="formula-row">
-            <input class="formula-input" type="text" id="v3" inputmode="none" onclick="openKeypad('v3')"> × 
-            <input class="formula-input" type="text" id="v4" inputmode="none" onclick="openKeypad('v4')"> = 
-            <input class="formula-input" type="text" id="v5" inputmode="none" onclick="openKeypad('v5')">
-        </div>
-        <div>
-            <input class="formula-input" type="text" id="v6" inputmode="none" onclick="openKeypad('v6')"> + 
-            <input class="formula-input" type="text" id="v7" inputmode="none" onclick="openKeypad('v7')"> = 
-            <input class="formula-input" type="text" id="vAns" inputmode="none" onclick="openKeypad('vAns')">
-        </div>`;
-        document.getElementById('formula-inputs').innerHTML = html;
-        // 図を選ぶまでは、計算式を表示しない
-        document.getElementById('formula-section-container').style.display = "none";
+        // 図を分けるまでは計算式を表示しない
+        updateSplitFormula(0);
             
     }
     function showGridTableProblem(data){
