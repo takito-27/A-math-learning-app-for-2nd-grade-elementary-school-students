@@ -423,6 +423,65 @@ const unitData = [
         return container;
     }
 
+    
+    function updateSplitFormula(partCount) {
+        const formulaInputs = document.getElementById("formula-inputs");
+        const formulaContainer = document.getElementById(
+            "formula-section-container"
+        );
+
+        if (!formulaInputs || !formulaContainer) return;
+
+        if (partCount < 2) {
+            formulaInputs.innerHTML = "";
+            formulaContainer.style.display = "none";
+            return;
+        }
+
+        let html = "";
+
+        // 分割数に応じて、かけ算の式を生成
+        for (let i = 0; i < partCount; i++) {
+            html += `
+                <div class="formula-row">
+                    <input class="formula-input" type="text"
+                        id="mul-${i}-0" inputmode="none"
+                        onclick="openKeypad('mul-${i}-0')"> ×
+                    <input class="formula-input" type="text"
+                        id="mul-${i}-1" inputmode="none"
+                        onclick="openKeypad('mul-${i}-1')"> =
+                    <input class="formula-input" type="text"
+                        id="mul-${i}-2" inputmode="none"
+                        onclick="openKeypad('mul-${i}-2')">
+                </div>
+            `;
+        }
+
+    // 分割数に応じて、たし算の式を生成
+        html += `<div class="formula-row">`;
+
+        for (let i = 0; i < partCount; i++) {
+            if (i > 0) html += " + ";
+
+            html += `
+                <input class="formula-input" type="text"
+                    id="add-${i}" inputmode="none"
+                    onclick="openKeypad('add-${i}')">
+            `;
+        }
+
+        html += `
+            =
+            <input class="formula-input" type="text"
+                id="add-answer" inputmode="none"
+                onclick="openKeypad('add-answer')">
+            </div>
+        `;
+
+        formulaInputs.innerHTML = html;
+        formulaContainer.style.display = "block";
+    }
+
 
     function showSplitProblem(data){
         document.getElementById('options-section').style.display = "block";
