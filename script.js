@@ -312,7 +312,9 @@ const unitData = [
     }
 
     
+    
     function createOriginalArray(columns, rows) {
+        const wrapper = document.createElement("div");
         const container = document.createElement("div");
 
         container.style.display = "grid";
@@ -324,21 +326,17 @@ const unitData = [
         container.style.gap = "5px";
         container.style.margin = "20px auto";
 
-        // 現在の問題に設定された最大分割数
         const data = getCurrentProblem();
-        const maxParts = Math.max(
-            2,
-            Math.min(columns, Number(data.maxParts) || 2)
-        );
-
         const colors = [
-            "#79c7ec",
-            "#a6d974",
-            "#f7c879",
-            "#c5a8eb"
+            "#79c7ec", "#a6d974", "#f7c879",
+            "#c5a8eb", "#f3a6b4", "#9bd9c3"
         ];
 
         const cells = [];
+        let splitPositions = [];
+
+        container.dataset.splitPositions = "[]";
+        container.dataset.splitPosition = "";
 
         for (let i = 0; i < columns * rows; i++) {
             const cell = document.createElement("div");
@@ -355,13 +353,35 @@ const unitData = [
             cells.push(cell);
         }
 
-        // 複数の分割位置を保存する
-        let splitPositions = [];
+        const instruction = document.createElement("p");
+        instruction.style.textAlign = "center";
+        instruction.style.fontSize = "14px";
 
-        container.dataset.splitPositions = "[]";
+        const resetButton = document.createElement("button");
+        resetButton.type = "button";
+        resetButton.textContent = "分け方をやり直す";
+        resetButton.style.display = "block";
+        resetButton.style.margin = "10px auto";
+        resetButton.style.padding = "10px 18px";
 
-        // 既存の2分割用の判定との互換性を維持
-        container.dataset.splitPosition = "";
+        const moveControls = document.createElement("div");
+        moveControls.style.textAlign = "center";
+        moveControls.style.margin = "10px auto";
+
+        const moveSelect = document.createElement("select");
+        moveSelect.setAttribute("aria-label", "移動する区切り");
+
+        const moveLeft = document.createElement("button");
+        moveLeft.type = "button";
+        moveLeft.textContent = "← 左へ";
+
+        const moveRight = document.createElement("button");
+        moveRight.type = "button";
+        moveRight.textContent = "右へ →";
+
+        moveControls.appendChild(moveSelect);
+        moveControls.appendChild(moveLeft);
+        moveControls.appendChild(moveRight);
 
         function updateArray() {
             splitPositions.sort((a, b) => a - b);
@@ -369,7 +389,6 @@ const unitData = [
             container.dataset.splitPositions =
                 JSON.stringify(splitPositions);
 
-            // 2分割の場合は従来の判定を使用できる
             container.dataset.splitPosition =
                 splitPositions.length === 1
                     ? String(splitPositions[0])
@@ -377,7 +396,6 @@ const unitData = [
 
             cells.forEach((cell, index) => {
                 const column = index % columns;
-
                 const groupIndex = splitPositions.filter(
                     position => column >= position
                 ).length;
@@ -386,32 +404,49 @@ const unitData = [
                     colors[groupIndex % colors.length];
             });
 
-            // 分割数に合わせて計算式を更新
+            const previousSelection = Number(moveSelect.value);
+
+            moveSelect.innerHTML = "";
+
+            splitPositions.forEach((position) => {
+                const option = document.createElement("option");
+                option.value = String(position);
+                option.textContent = `${position}列目の後ろ`;
+                moveSelect.appendChild(option);
+            });
+
+            if (splitPositions.includes(previousSelection)) {
+                moveSelect.value = String(previousSelection);
+            }
+        
+
+            moveControls.style.display =
+                splitPositions.length > 0 ? "block" : "none";
+
             const partCount = splitPositions.length + 1;
 
-            if (splitPositions.length > 0) {
-                updateSplitFormula(partCount);
-            } else {
-                updateSplitFormula(0);
-            }
+            updateSplitFormula(
+                splitPositions.length > 0 ? partCount : 0
+            );
+
+            instruction.textContent =
+                `現在は${partCount}つに分かれています。` +
+                (data.suggestedMaxParts
+                    ? ` ${data.suggestedMaxParts}つまでに分けて考えてみよう。`
+                    : "");
         }
 
-        // クリックした位置で区切る
         cells.forEach((cell, index) => {
             cell.addEventListener("click", () => {
                 const position = (index % columns) + 1;
 
-                // 最後の列の後ろでは分割できない
                 if (position >= columns) return;
 
-                const existingIndex =
-                    splitPositions.indexOf(position);
-
-             if (existingIndex !== -1) {
-                    // 同じ位置を押すと区切りを解除
-                    splitPositions.splice(existingIndex, 1);
-                } else if (splitPositions.length < maxParts - 1) {
-                    // 上限以内なら区切りを追加
+                if (splitPositions.includes(position)) {
+                    splitPositions = splitPositions.filter(
+                        value => value !== position
+                    );
+                } else {
                     splitPositions.push(position);
                 }
 
@@ -419,7 +454,40 @@ const unitData = [
             });
         });
 
-        return container;
+        function moveCut(direction) {
+            const oldPosition = Number(moveSelect.value);
+            const newPosition = oldPosition + direction;
+
+            if (!splitPositions.includes(oldPosition)) return;
+            if (newPosition <= 0 || newPosition >= columns) return;
+            if (splitPositions.includes(newPosition)) return;
+
+            splitPositions = splitPositions.map(
+                position => position === oldPosition
+                    ? newPosition
+                    : position
+            );
+
+            updateArray();
+            moveSelect.value = String(newPosition);
+        }
+
+        moveLeft.addEventListener("click", () => moveCut(-1));
+        moveRight.addEventListener("click", () => moveCut(1));
+
+        resetButton.addEventListener("click", () => {
+            splitPositions = [];
+            updateArray();
+        });
+
+        wrapper.appendChild(instruction);
+        wrapper.appendChild(container);
+        wrapper.appendChild(moveControls);
+        wrapper.appendChild(resetButton);
+
+        updateArray();
+
+        return wrapper;
     }
 
     
@@ -1203,11 +1271,30 @@ function closeHintFromBackground(event) {
             );
 
             // 図がまだ分割されていない場合
-            if (!array || array.dataset.splitPosition === "") {
-                res.innerText = "図を分けてね！";
-                res.style.color = "orange";
-                hintBtn.style.display = "none";
-                return;
+            if (data.style === "split-multiplication") {
+                const array = document.querySelector(
+                    "#original-array [data-split-positions]"
+                );
+
+                let splitPositions = [];
+
+                if (array) {
+                    try {
+                        splitPositions = JSON.parse(
+                            array.dataset.splitPositions
+                        );
+                    } catch (error) {
+                        splitPositions = [];
+                    }
+                }
+
+                if (!Array.isArray(splitPositions) ||
+                    splitPositions.length === 0) {
+                    res.innerText = "図を分けてね！";
+                    res.style.color = "orange";
+                    hintBtn.style.display = "none";
+                    return;
+                }
             }
         }
         if(data.style === "normal"){
@@ -1281,125 +1368,192 @@ function checkNormalAnswer(data){
 }
 
 
+
 function checkSplitAnswer(data) {
-    // 現在のアレイ図を取得する
     const array = document.querySelector(
-        "#original-array [data-split-position]"
+        "#original-array [data-split-positions]"
     );
 
-    // 図がまだ分割されていない場合
-    if (!array || array.dataset.splitPosition === "") {
-        return {
-            correct: false,
-            almost: false
-        };
+    if (!array) {
+        return { correct: false, almost: false };
     }
 
-    // 児童が選んだ分割位置
-    const splitPosition = Number(array.dataset.splitPosition);
+    let splitPositions;
 
-    // 元のアレイ図の列数と行数
+    try {
+        splitPositions = JSON.parse(
+            array.dataset.splitPositions
+        );
+    } catch (error) {
+        return { correct: false, almost: false };
+    }
+
+    if (!Array.isArray(splitPositions) ||
+        splitPositions.length === 0) {
+        return { correct: false, almost: false };
+    }
+
     const columns = Number(data.originalColumns);
     const rows = Number(data.originalRows);
 
-    // 左側と右側の列数
-    const leftColumns = splitPosition;
-    const rightColumns = columns - splitPosition;
+    // 分割位置から各部分の列数を計算
+    const positions = [...splitPositions].sort(
+        (a, b) => a - b
+    );
 
-    // それぞれのかけ算の答え
-    const leftProduct = leftColumns * rows;
-    const rightProduct = rightColumns * rows;
+    const boundaries = [0, ...positions, columns];
+    const widths = [];
 
-    // 全体の数
-    const expectedTotal = columns * rows;
-
-    // 入力された値を取得
-    const values = [];
-
-    for (let i = 0; i < 8; i++) {
-        values.push(
-            document.getElementById("v" + i).value.trim()
+    for (let i = 0; i < boundaries.length - 1; i++) {
+        widths.push(
+            boundaries[i + 1] - boundaries[i]
         );
     }
 
-    const vAns = document.getElementById("vAns").value.trim();
+    const partCount = widths.length;
 
-    // 左側と右側の正しい式
-    const pair1 = [
-        String(leftColumns),
-        String(rows),
-        String(leftProduct)
+    // 正しいかけ算の式を生成
+    const expectedMultiplications = widths.map(width => ({
+        first: width,
+        second: rows,
+        product: width * rows
+    }));
+
+    const inputMultiplications = [];
+
+    // 入力されたかけ算を取得
+    for (let i = 0; i < partCount; i++) {
+        const first = document.getElementById(`mul-${i}-0`);
+        const second = document.getElementById(`mul-${i}-1`);
+        const product = document.getElementById(`mul-${i}-2`);
+
+        if (!first || !second || !product) {
+            return { correct: false, almost: false };
+        }
+
+        inputMultiplications.push({
+            first: first.value.trim(),
+            second: second.value.trim(),
+            product: product.value.trim()
+        });
+    }
+
+    // 入力されたたし算を取得
+    const additionValues = [];
+
+    for (let i = 0; i < partCount; i++) {
+        const input = document.getElementById(`add-${i}`);
+
+        if (!input) {
+            return { correct: false, almost: false };
+        }
+
+        additionValues.push(input.value.trim());
+    }
+
+    const answerInput = document.getElementById("add-answer");
+
+    if (!answerInput) {
+        return { correct: false, almost: false };
+    }
+
+    // 入力値が正の整数であるか確認
+    function isNumber(value) {
+        return /^\d+$/.test(value);
+    }
+
+    const allValues = [
+        ...inputMultiplications.flatMap(item => [
+            item.first,
+            item.second,
+            item.product
+        ]),
+        ...additionValues,
+        answerInput.value.trim()
     ];
 
-    const pair2 = [
-        String(rightColumns),
-        String(rows),
-        String(rightProduct)
-    ];
+    if (!allValues.every(isNumber)) {
+        return { correct: false, almost: false };
+    }
 
-    // かけ算の式が一致しているか調べる
-    function matches(input, expected, allowReverse = false) {
+    // 入力された式と期待される式を比較
+    function matches(input, expected, allowReverse) {
+        const first = Number(input.first);
+        const second = Number(input.second);
+        const product = Number(input.product);
+
         const normal =
-            input[0] === expected[0] &&
-            input[1] === expected[1] &&
-            input[2] === expected[2];
+            first === expected.first &&
+            second === expected.second &&
+            product === expected.product;
 
         const reverse =
-            input[0] === expected[1] &&
-            input[1] === expected[0] &&
-            input[2] === expected[2];
+            first === expected.second &&
+            second === expected.first &&
+            product === expected.product;
 
         return normal || (allowReverse && reverse);
     }
 
-    const formula1 = values.slice(0, 3);
-    const formula2 = values.slice(3, 6);
+    // 同じ式が複数ある場合も正しく照合する
+    function checkMultiplications(allowReverse) {
+        const used = new Array(
+            expectedMultiplications.length
+        ).fill(false);
 
-    // 左右の式を入れ替えても正解とする
-    const multCorrect =
-        (matches(formula1, pair1) && matches(formula2, pair2)) ||
-        (matches(formula1, pair2) && matches(formula2, pair1));
+        for (const input of inputMultiplications) {
+            let found = false;
 
-    // かける数の順序を逆にした場合は「おしい」とする
-    const multAlmost =
-        (
-            matches(formula1, pair1, true) &&
-            matches(formula2, pair2, true)
-        ) ||
-        (
-            matches(formula1, pair2, true) &&
-            matches(formula2, pair1, true)
-        );
+            for (let i = 0; i < expectedMultiplications.length; i++) {
+                if (used[i]) continue;
 
-    // たし算の判定
+                if (matches(
+                    input,
+                    expectedMultiplications[i],
+                    allowReverse
+                )) {
+                    used[i] = true;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) return false;
+        }
+
+        return true;
+    }
+
+    const multCorrect = checkMultiplications(false);
+    const multAlmost = checkMultiplications(true);
+
+    // たし算の各項を順序に関係なく比較
+    const expectedProducts = expectedMultiplications
+        .map(item => item.product)
+        .sort((a, b) => a - b);
+
+    const enteredProducts = additionValues
+        .map(Number)
+        .sort((a, b) => a - b);
+
     const addCorrect =
-        (
-            (values[6] === String(leftProduct) &&
-             values[7] === String(rightProduct)) ||
-            (values[6] === String(rightProduct) &&
-             values[7] === String(leftProduct))
+        expectedProducts.every(
+            (value, index) =>
+                value === enteredProducts[index]
         ) &&
-        vAns === String(expectedTotal);
+        Number(answerInput.value.trim()) === columns * rows;
 
     if (multCorrect && addCorrect) {
-        return {
-            correct: true,
-            almost: false
-        };
+        return { correct: true, almost: false };
     }
 
     if (multAlmost && addCorrect) {
-        return {
-            correct: false,
-            almost: true
-        };
+        return { correct: false, almost: true };
     }
 
-    return {
-        correct: false,
-        almost: false
-    };
+    return { correct: false, almost: false };
 }
+
 
 
 function checkGridTableAnswer(data){
