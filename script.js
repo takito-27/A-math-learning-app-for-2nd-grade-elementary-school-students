@@ -1647,7 +1647,44 @@ function closeHintFromBackground(event) {
         activeInputId = null;
     });
 
-   
+
+/* ========================================
+   かけ算の計算①：正解時の振り返り
+   ======================================== */
+
+function createSplitReflection(data) {
+    const splitInfo = getSplitHintInfo(data);
+
+    if (!splitInfo) return "";
+
+    const { widths, rows, columns } = splitInfo;
+
+    // 児童が分けたそれぞれの部分の答え
+    const products = widths.map(width => width * rows);
+
+    // 分け方の説明
+    const widthText = widths.join("と");
+
+    // かけ算の式
+    const multiplicationText = widths
+        .map((width, index) =>
+            `${width} × ${rows} = ${products[index]}`
+        )
+        .join("\n");
+
+    // たし算の式
+    const additionText =
+        `${products.join(" + ")} = ${columns * rows}`;
+
+    return (
+        `${columns}を「${widthText}」に分けて考えたんだね。\n\n` +
+        `${multiplicationText}\n\n` +
+        `${additionText}\n\n` +
+        "九九を使って、じょうずに計算できたね！"
+    );
+}
+
+    
 function checkAnswer() {
     const data = getCurrentProblem();
 
@@ -1746,8 +1783,20 @@ function checkAnswer() {
         hintErrorType = errorType;
     }
 
+    
     if (isValueCorrect) {
-        res.innerText = "せいかい！";
+
+        // かけ算の計算①では、正解時に計算過程を表示
+        if (data.style === "split-multiplication") {
+
+            const reflection = createSplitReflection(data);
+
+            res.innerText = "せいかい！\n\n" + reflection;
+
+        } else {
+            res.innerText = "せいかい！";
+        }
+
         res.style.color = "red";
 
         hintBtn.style.display = "none";
@@ -1755,6 +1804,12 @@ function checkAnswer() {
 
         hintErrorType = null;
         hintStep = 0;
+
+        // かけ算の計算①は振り返りの時間を長めに確保
+        const waitTime =
+            data.style === "split-multiplication"
+                ? 6000
+                : 2000;
 
         setTimeout(function () {
             if (
@@ -1766,9 +1821,10 @@ function checkAnswer() {
             } else {
                 showResultScreen();
             }
-        }, 2000);
+        }, waitTime);
 
     } else if (isAlmostCorrect) {
+
         res.innerText = "おしい！";
         res.style.color = "orange";
 
@@ -1780,6 +1836,7 @@ function checkAnswer() {
         }
 
     } else {
+
         mistakeCount[currentProblem]++;
 
         res.innerText = "ちがうよ！";
@@ -1787,6 +1844,7 @@ function checkAnswer() {
 
         hintBtn.style.display = "inline-block";
     }
+
 }
 
 function checkNormalAnswer(data){
