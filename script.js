@@ -359,6 +359,9 @@ function createOriginalArray(columns, rows) {
     const cells = [];
     let splitPositions = [];
 
+    // 前回の分割位置を記録する
+    let previousSplitKey = "[]";
+
     container.dataset.splitPositions = "[]";
     container.dataset.splitPosition = "";
 
@@ -410,11 +413,49 @@ function createOriginalArray(columns, rows) {
         cells.push(cell);
     }
 
+    
     function updateArray() {
         splitPositions.sort((a, b) => a - b);
 
-        container.dataset.splitPositions =
-            JSON.stringify(splitPositions);
+        // 現在の分割位置を記録
+        const currentSplitKey = JSON.stringify(splitPositions);
+
+        // 前回から分割位置が変わった場合のみ処理
+        if (currentSplitKey !== previousSplitKey) {
+
+            // 次の答え合わせではヒントを最初から表示
+            hintStep = 0;
+
+            // 前回の間違いの種類を引き継がない
+            hintErrorType = null;
+
+            // 前回のヒントボタンを非表示にする
+            const hintButton = document.getElementById("hint-btn");
+            if (hintButton) {
+                hintButton.style.display = "none";
+            }
+
+            // 以前のヒント内容をクリア
+            const hintDisplay = document.getElementById("hint-display");
+            if (hintDisplay) {
+                hintDisplay.replaceChildren();
+            }
+
+            // 開いているヒントウィンドウがあれば閉じる
+            const hintModal = document.getElementById("hint-modal");
+            if (
+                hintModal &&
+                hintModal.getAttribute("aria-hidden") === "false"
+            ) {
+                closeHint();
+            }
+
+            // 新しい分割位置を保存
+            previousSplitKey = currentSplitKey;
+        }
+
+        container.dataset.splitPositions = currentSplitKey;
+
 
         container.dataset.splitPosition =
             splitPositions.length === 1
