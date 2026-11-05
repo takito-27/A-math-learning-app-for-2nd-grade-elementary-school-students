@@ -2053,6 +2053,7 @@ function setupSplitNextButton() {
 }
 
 
+
 function showSplitNextButton() {
 
     const modal =
@@ -2068,7 +2069,6 @@ function showSplitNextButton() {
 
     const data = getCurrentProblem();
 
-    
     // 以前の表示内容を消去
     content.replaceChildren();
 
@@ -2077,14 +2077,15 @@ function showSplitNextButton() {
 
     if (reflectionVisual) {
 
+        // アレイ図と計算式を表示
         content.appendChild(reflectionVisual);
 
     } else {
 
         // 分割情報を取得できない場合の予備表示
-    content.textContent = createSplitReflection(data);
+        content.textContent = createSplitReflection(data);
+
     }
-    
 
     const isLastProblem =
         currentProblem >=
@@ -2102,6 +2103,7 @@ function showSplitNextButton() {
 
     nextButton.focus();
 }
+
 
 
     
