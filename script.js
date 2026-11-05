@@ -1713,6 +1713,136 @@ function createSplitReflection(data) {
 
 
 /* ========================================
+   正解ポップアップ用の色分けアレイ図
+   ======================================== */
+
+function createSplitReflectionVisual(data) {
+
+    const info = getSplitHintInfo(data);
+
+    if (!info) {
+        return null;
+    }
+
+    const { widths, rows, columns } = info;
+
+    // 問題画面のアレイ図と同じ色
+    const colors = [
+        "#79c7ec",
+        "#a6d974",
+        "#f7c879",
+        "#c5a8eb",
+        "#f3a6b4",
+        "#9bd9c3"
+    ];
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "split-reflection";
+
+    // 分け方の説明
+    const description = document.createElement("p");
+    description.className = "split-reflection-description";
+    description.textContent =
+        `${columns}を「${widths.join("と")}」に分けて考えたんだね。`;
+
+    wrapper.appendChild(description);
+
+    // アレイ図
+    const array = document.createElement("div");
+    array.className = "split-reflection-array";
+
+    array.style.gridTemplateColumns =
+        `repeat(${columns}, minmax(0, 1fr))`;
+
+    // 各列がどの部分に属するかを計算
+    const boundaries = [];
+    let totalWidth = 0;
+
+    widths.forEach(width => {
+        totalWidth += width;
+        boundaries.push(totalWidth);
+    });
+
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < columns; col++) {
+
+            const cell = document.createElement("div");
+            cell.className = "split-reflection-cell";
+
+            const groupIndex = boundaries.findIndex(
+                boundary => col < boundary
+            );
+
+            cell.style.backgroundColor =
+                colors[groupIndex % colors.length];
+
+            // 分割位置を線で強調
+            if (
+                col > 0 &&
+                boundaries.slice(0, -1).includes(col)
+            ) {
+                cell.classList.add(
+                    "split-reflection-boundary"
+                );
+            }
+
+            array.appendChild(cell);
+        }
+    }
+
+    wrapper.appendChild(array);
+
+    // 分けた部分ごとの計算式
+    const formulas = document.createElement("div");
+    formulas.className = "split-reflection-formulas";
+
+    const products = widths.map(width => width * rows);
+
+    widths.forEach((width, index) => {
+
+        const formula = document.createElement("div");
+        formula.className = "split-reflection-formula";
+
+        formula.style.borderLeft =
+            `7px solid ${colors[index % colors.length]}`;
+
+        const label = document.createElement("span");
+        label.className = "split-reflection-formula-label";
+        label.textContent = `${index + 1}つめ`;
+
+        const expression = document.createElement("strong");
+        expression.textContent =
+            `${width} × ${rows} = ${products[index]}`;
+
+        formula.appendChild(label);
+        formula.appendChild(expression);
+
+        formulas.appendChild(formula);
+    });
+
+    wrapper.appendChild(formulas);
+
+    // 最後のたし算
+    const addition = document.createElement("div");
+    addition.className = "split-reflection-addition";
+
+    addition.textContent =
+        `${products.join(" + ")} = ${columns * rows}`;
+
+    wrapper.appendChild(addition);
+
+    const message = document.createElement("p");
+    message.className = "split-reflection-message";
+    message.textContent =
+        "九九を使って、じょうずに計算できたね！";
+
+    wrapper.appendChild(message);
+
+    return wrapper;
+}
+
+
+/* ========================================
    かけ算の計算①：正解後の次へボタン
    ======================================== */
 
@@ -1826,7 +1956,22 @@ function showSplitNextButton() {
 
     const data = getCurrentProblem();
 
-    // 児童が実際に選んだ分け方を表示
+    
+    // 以前の表示内容を消去
+    content.replaceChildren();
+
+    // 色分けしたアレイ図と計算式を生成
+    const reflectionVisual = createSplitReflectionVisual(data);
+
+    if (reflectionVisual) {
+
+        content.appendChild(reflectionVisual);
+
+    } else {
+
+        // 分割情報を取得できない場合の予備表示
+    content.textContent = createSplitReflection(data);
+    }
     content.textContent = createSplitReflection(data);
 
     const isLastProblem =
