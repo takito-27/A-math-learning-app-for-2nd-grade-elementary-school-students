@@ -313,241 +313,334 @@ const unitData = [
 
     
     
-    function createOriginalArray(columns, rows) {
-        const wrapper = document.createElement("div");
-        const container = document.createElement("div");
+   
+function createOriginalArray(columns, rows) {
+    const wrapper = document.createElement("div");
+    const gridArea = document.createElement("div");
+    const container = document.createElement("div");
 
-        container.style.display = "grid";
-        container.style.width = "100%";
-        container.style.maxWidth = "650px";
-        container.style.boxSizing = "border-box";
-        container.style.gridTemplateColumns =
-            `repeat(${columns}, minmax(0, 1fr))`;
-        container.style.gap = "5px";
-        container.style.margin = "20px auto";
+    wrapper.style.width = "100%";
 
-        const data = getCurrentProblem();
-        const colors = [
-            "#79c7ec", "#a6d974", "#f7c879",
-            "#c5a8eb", "#f3a6b4", "#9bd9c3"
-        ];
+    gridArea.style.position = "relative";
+    gridArea.style.width = "100%";
+    gridArea.style.maxWidth = "650px";
+    gridArea.style.margin = "20px auto";
 
-        const cells = [];
-        let splitPositions = [];
+    container.style.display = "grid";
+    container.style.width = "100%";
+    container.style.boxSizing = "border-box";
+    container.style.gridTemplateColumns =
+        `repeat(${columns}, minmax(0, 1fr))`;
+    container.style.gap = "5px";
 
-        container.dataset.splitPositions = "[]";
-        container.dataset.splitPosition = "";
+    const data = getCurrentProblem();
 
-        for (let i = 0; i < columns * rows; i++) {
-            const cell = document.createElement("div");
+    const colors = [
+        "#79c7ec", "#a6d974", "#f7c879",
+        "#c5a8eb", "#f3a6b4", "#9bd9c3"
+    ];
 
-            cell.style.width = "100%";
-            cell.style.aspectRatio = "1 / 1";
-            cell.style.boxSizing = "border-box";
-            cell.style.border = "1px solid #3989b7";
-            cell.style.borderRadius = "4px";
-            cell.style.backgroundColor = colors[0];
-            cell.style.cursor = "pointer";
+    const cells = [];
+    let splitPositions = [];
 
-            container.appendChild(cell);
-            cells.push(cell);
-        }
+    container.dataset.splitPositions = "[]";
+    container.dataset.splitPosition = "";
 
-        const instruction = document.createElement("p");
-        instruction.style.textAlign = "center";
-        instruction.style.fontSize = "14px";
+    const instruction = document.createElement("p");
+    instruction.style.textAlign = "center";
+    instruction.style.fontSize = "14px";
 
-        const resetButton = document.createElement("button");
-        resetButton.type = "button";
-        resetButton.textContent = "分け方をやり直す";
-        resetButton.style.display = "block";
-        resetButton.style.margin = "10px auto";
-        resetButton.style.padding = "10px 18px";
+    const resetButton = document.createElement("button");
+    resetButton.type = "button";
+    resetButton.textContent = "分け方をやり直す";
+    resetButton.style.display = "block";
+    resetButton.style.margin = "10px auto";
+    resetButton.style.padding = "10px 18px";
 
-        const moveControls = document.createElement("div");
-        moveControls.style.textAlign = "center";
-        moveControls.style.margin = "10px auto";
+    const lineLayer = document.createElement("div");
+    lineLayer.style.position = "absolute";
+    lineLayer.style.inset = "0";
+    lineLayer.style.pointerEvents = "none";
 
-        const moveSelect = document.createElement("select");
-        moveSelect.setAttribute("aria-label", "移動する区切り");
+    for (let i = 0; i < columns * rows; i++) {
+        const cell = document.createElement("div");
 
-        const moveLeft = document.createElement("button");
-        moveLeft.type = "button";
-        moveLeft.textContent = "← 左へ";
+        cell.style.width = "100%";
+        cell.style.aspectRatio = "1 / 1";
+        cell.style.boxSizing = "border-box";
+        cell.style.border = "1px solid #3989b7";
+        cell.style.borderRadius = "4px";
+        cell.style.backgroundColor = colors[0];
+        cell.style.cursor = "pointer";
 
-        const moveRight = document.createElement("button");
-        moveRight.type = "button";
-        moveRight.textContent = "右へ →";
+        const position = (i % columns) + 1;
 
-        moveControls.appendChild(moveSelect);
-        moveControls.appendChild(moveLeft);
-        moveControls.appendChild(moveRight);
+        cell.addEventListener("click", () => {
+            if (position >= columns) return;
 
-        function updateArray() {
-            splitPositions.sort((a, b) => a - b);
-
-            container.dataset.splitPositions =
-                JSON.stringify(splitPositions);
-
-            container.dataset.splitPosition =
-                splitPositions.length === 1
-                    ? String(splitPositions[0])
-                    : "";
-
-            cells.forEach((cell, index) => {
-                const column = index % columns;
-                const groupIndex = splitPositions.filter(
-                    position => column >= position
-                ).length;
-
-                cell.style.backgroundColor =
-                    colors[groupIndex % colors.length];
-            });
-
-            const previousSelection = Number(moveSelect.value);
-
-            moveSelect.innerHTML = "";
-
-            splitPositions.forEach((position) => {
-                const option = document.createElement("option");
-                option.value = String(position);
-                option.textContent = `${position}列目の後ろ`;
-                moveSelect.appendChild(option);
-            });
-
-            if (splitPositions.includes(previousSelection)) {
-                moveSelect.value = String(previousSelection);
+            // 既存の区切りをクリックしたら削除
+            if (splitPositions.includes(position)) {
+                splitPositions = splitPositions.filter(
+                    value => value !== position
+                );
+            } else {
+                splitPositions.push(position);
             }
-        
 
-            moveControls.style.display =
-                splitPositions.length > 0 ? "block" : "none";
+            updateArray();
+        });
 
-            const partCount = splitPositions.length + 1;
+        container.appendChild(cell);
+        cells.push(cell);
+    }
 
-            updateSplitFormula(
-                splitPositions.length > 0 ? partCount : 0
-            );
+    function updateArray() {
+        splitPositions.sort((a, b) => a - b);
 
-            instruction.textContent =
-                `現在は${partCount}つに分かれています。` +
-                (data.suggestedMaxParts
-                    ? ` ${data.suggestedMaxParts}つまでに分けて考えてみよう。`
-                    : "");
-        }
+        container.dataset.splitPositions =
+            JSON.stringify(splitPositions);
+
+        container.dataset.splitPosition =
+            splitPositions.length === 1
+                ? String(splitPositions[0])
+                : "";
 
         cells.forEach((cell, index) => {
-            cell.addEventListener("click", () => {
-                const position = (index % columns) + 1;
+            const column = index % columns;
 
-                if (position >= columns) return;
+            const groupIndex = splitPositions.filter(
+                position => column >= position
+            ).length;
 
-                if (splitPositions.includes(position)) {
+            cell.style.backgroundColor =
+                colors[groupIndex % colors.length];
+        });
+
+        renderLines();
+
+        const partCount = splitPositions.length + 1;
+
+        updateSplitFormula(
+            splitPositions.length > 0 ? partCount : 0
+        );
+
+        instruction.textContent =
+            `現在は${partCount}つに分かれています。` +
+            (data.suggestedMaxParts
+                ? ` ${data.suggestedMaxParts}つまでに分けて考えてみよう。`
+                : "");
+    }
+
+    function renderLines() {
+        lineLayer.innerHTML = "";
+
+        const gridWidth = container.clientWidth;
+        const gap = 5;
+        const cellWidth =
+            (gridWidth - gap * (columns - 1)) / columns;
+
+        splitPositions.forEach(position => {
+            const line = document.createElement("div");
+
+            const x =
+                position * cellWidth +
+                (position - 0.5) * gap;
+
+            line.style.position = "absolute";
+            line.style.left = `${x}px`;
+            line.style.top = "0";
+            line.style.height = "100%";
+            line.style.width = "16px";
+            line.style.transform = "translateX(-50%)";
+            line.style.cursor = "ew-resize";
+            line.style.touchAction = "none";
+            line.style.pointerEvents = "auto";
+            line.style.zIndex = "10";
+
+            // 中央のオレンジ色の区切り線
+            const visualLine = document.createElement("div");
+            visualLine.style.position = "absolute";
+            visualLine.style.left = "50%";
+            visualLine.style.top = "0";
+            visualLine.style.height = "100%";
+            visualLine.style.width = "4px";
+            visualLine.style.transform = "translateX(-50%)";
+            visualLine.style.backgroundColor = "#e17b39";
+            visualLine.style.borderRadius = "3px";
+
+            line.appendChild(visualLine);
+
+            let startX = 0;
+            let moved = false;
+
+            line.addEventListener("pointerdown", event => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                startX = event.clientX;
+                moved = false;
+
+                line.setPointerCapture(event.pointerId);
+            });
+
+            line.addEventListener("pointermove", event => {
+                if (!line.hasPointerCapture(event.pointerId)) {
+                    return;
+                }
+
+                if (Math.abs(event.clientX - startX) > 5) {
+                    moved = true;
+                }
+            });
+
+            line.addEventListener("pointerup", event => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const endX = event.clientX;
+                const distance = endX - startX;
+
+                if (!moved && Math.abs(distance) <= 5) {
+                    // ドラッグせずクリックした場合は削除
                     splitPositions = splitPositions.filter(
                         value => value !== position
                     );
                 } else {
-                    splitPositions.push(position);
+                    // 移動先の列境界を計算
+                    const step = cellWidth + gap;
+                    const moveCount = Math.round(distance / step);
+                    const newPosition = position + moveCount;
+
+                    if (
+                        newPosition > 0 &&
+                        newPosition < columns &&
+                        !splitPositions.includes(newPosition)
+                    ) {
+                        splitPositions = splitPositions.map(
+                            value => value === position
+                                ? newPosition
+                                : value
+                        );
+                    }
                 }
 
                 updateArray();
             });
+
+            lineLayer.appendChild(line);
         });
-
-        function moveCut(direction) {
-            const oldPosition = Number(moveSelect.value);
-            const newPosition = oldPosition + direction;
-
-            if (!splitPositions.includes(oldPosition)) return;
-            if (newPosition <= 0 || newPosition >= columns) return;
-            if (splitPositions.includes(newPosition)) return;
-
-            splitPositions = splitPositions.map(
-                position => position === oldPosition
-                    ? newPosition
-                    : position
-            );
-
-            updateArray();
-            moveSelect.value = String(newPosition);
-        }
-
-        moveLeft.addEventListener("click", () => moveCut(-1));
-        moveRight.addEventListener("click", () => moveCut(1));
-
-        resetButton.addEventListener("click", () => {
-            splitPositions = [];
-            updateArray();
-        });
-
-        wrapper.appendChild(instruction);
-        wrapper.appendChild(container);
-        wrapper.appendChild(moveControls);
-        wrapper.appendChild(resetButton);
-
-        updateArray();
-
-        return wrapper;
     }
+
+    resetButton.addEventListener("click", () => {
+        splitPositions = [];
+        updateArray();
+    });
+
+    gridArea.appendChild(container);
+    gridArea.appendChild(lineLayer);
+
+    wrapper.appendChild(instruction);
+    wrapper.appendChild(gridArea);
+    wrapper.appendChild(resetButton);
+
+    // 画面幅が変わった場合にも区切り線を再配置
+    const resizeObserver = new ResizeObserver(() => {
+        renderLines();
+    });
+
+    resizeObserver.observe(container);
+
+    updateArray();
+
+    return wrapper;
+}
+
 
     
-    function updateSplitFormula(partCount) {
-        const formulaInputs = document.getElementById("formula-inputs");
-        const formulaContainer = document.getElementById(
-            "formula-section-container"
-        );
+   
+function updateSplitFormula(partCount) {
+    const formulaInputs = document.getElementById("formula-inputs");
+    const formulaContainer = document.getElementById(
+        "formula-section-container"
+    );
 
-        if (!formulaInputs || !formulaContainer) return;
+    if (!formulaInputs || !formulaContainer) return;
 
-        if (partCount < 2) {
-            formulaInputs.innerHTML = "";
-            formulaContainer.style.display = "none";
-            return;
-        }
+    // 現在の入力内容を保存する
+    const savedValues = {};
 
-        let html = "";
+    formulaInputs.querySelectorAll("input").forEach(input => {
+        savedValues[input.id] = input.value;
+    });
 
-        // 分割数に応じて、かけ算の式を生成
-        for (let i = 0; i < partCount; i++) {
-            html += `
-                <div class="formula-row">
-                    <input class="formula-input" type="text"
-                        id="mul-${i}-0" inputmode="none"
-                        onclick="openKeypad('mul-${i}-0')"> ×
-                    <input class="formula-input" type="text"
-                        id="mul-${i}-1" inputmode="none"
-                        onclick="openKeypad('mul-${i}-1')"> =
-                    <input class="formula-input" type="text"
-                        id="mul-${i}-2" inputmode="none"
-                        onclick="openKeypad('mul-${i}-2')">
-                </div>
-            `;
-        }
+    if (partCount < 2) {
+        formulaInputs.innerHTML = "";
+        formulaContainer.style.display = "none";
+        return;
+    }
 
-        // 分割数に応じて、たし算の式を生成
-            html += `<div class="formula-row">`;
+    let html = "";
 
-        for (let i = 0; i < partCount; i++) {
-            if (i > 0) html += " + ";
-
-            html += `
-                <input class="formula-input" type="text"
-                    id="add-${i}" inputmode="none"
-                    onclick="openKeypad('add-${i}')">
-            `;
-        }
-
+    // 分割数に応じたかけ算の入力欄
+    for (let i = 0; i < partCount; i++) {
         html += `
-            =
-            <input class="formula-input" type="text"
-                id="add-answer" inputmode="none"
-                onclick="openKeypad('add-answer')">
+            <div class="formula-row">
+                <input class="formula-input"
+                    type="text"
+                    id="mul-${i}-0"
+                    inputmode="none"
+                    onclick="openKeypad('mul-${i}-0')"> ×
+                <input class="formula-input"
+                    type="text"
+                    id="mul-${i}-1"
+                    inputmode="none"
+                    onclick="openKeypad('mul-${i}-1')"> =
+                <input class="formula-input"
+                    type="text"
+                    id="mul-${i}-2"
+                    inputmode="none"
+                    onclick="openKeypad('mul-${i}-2')">
             </div>
         `;
-
-        formulaInputs.innerHTML = html;
-        formulaContainer.style.display = "block";
     }
+
+    // たし算の入力欄
+    html += `<div class="formula-row">`;
+
+    for (let i = 0; i < partCount; i++) {
+        if (i > 0) html += " + ";
+
+        html += `
+            <input class="formula-input"
+                type="text"
+                id="add-${i}"
+                inputmode="none"
+                onclick="openKeypad('add-${i}')">
+        `;
+    }
+
+    html += `
+        = <input class="formula-input"
+            type="text"
+            id="add-answer"
+            inputmode="none"
+            onclick="openKeypad('add-answer')">
+        </div>
+    `;
+
+    formulaInputs.innerHTML = html;
+    formulaContainer.style.display = "block";
+
+    // 保存した入力内容を復元する
+    formulaInputs.querySelectorAll("input").forEach(input => {
+        if (Object.prototype.hasOwnProperty.call(
+            savedValues, input.id
+        )) {
+            input.value = savedValues[input.id];
+        }
+    });
+}
+
 
 
     function showSplitProblem(data){
