@@ -9,7 +9,8 @@ let hintStep = 0;
 
 // 最後に判定した間違いの種類
 let hintErrorType = null;
-
+// かけ算の計算①で正解済みかどうか
+let splitSolved = false;
 function getCurrentProblem() {
     return unitData[currentUnit - 1].problems[currentProblem];
 }
@@ -298,20 +299,46 @@ const unitData = [
             } else if(data.style==="normal"){
                 showNormalProblem(data);
             }
-            selectedId = ""; resetSelection(); document.getElementById('result-message').innerText = "";
-            document.getElementById('custom-keypad').style.display = "none";
+            
+            selectedId = "";
+            resetSelection();
+
+            document.getElementById("result-message").innerText = "";
+            document.getElementById("custom-keypad").style.display = "none";
+
             activeInputId = null;
 
-            // 「つぎへ」ボタンの表示切替
+            // 新しい問題では正解状態をリセット
+            splitSolved = false;
+
+            // 正解後の専用ボタンを準備
+            setupSplitNextButton();
+
+
+            
+            // 既存の「つぎへ」ボタンの表示切替
             const nextButton = document.getElementById("next-btn");
 
-                if (currentProblem >= unit.problems.length - 1) {
+            if (nextButton) {
+
+                if (data.style === "split-multiplication") {
+
+                    // かけ算の計算①では、正解後の専用ボタンを使用
                     nextButton.style.display = "none";
+
+                } else if (
+                    currentProblem >= unit.problems.length - 1
+                ) {
+
+                    nextButton.style.display = "none";
+
                 } else {
+
                     nextButton.style.display = "inline-block";
                 }
-        }
-        
+            }
+
+        }    
     }
 
     function showNormalProblem(data){
@@ -1684,9 +1711,79 @@ function createSplitReflection(data) {
     );
 }
 
+
+/* ========================================
+   かけ算の計算①：正解後の次へボタン
+   ======================================== */
+
+function setupSplitNextButton() {
+    const resultMessage = document.getElementById("result-message");
+
+    if (!resultMessage) return;
+
+    let button = document.getElementById("split-next-btn");
+
+    // ボタンは最初の1回だけ生成する
+    if (!button) {
+        button = document.createElement("button");
+        button.id = "split-next-btn";
+        button.type = "button";
+        button.className = "btn";
+
+        resultMessage.insertAdjacentElement("afterend", button);
+
+        button.addEventListener("click", function () {
+            const data = getCurrentProblem();
+
+            // 正解していなければ進めない
+            if (
+                data.style !== "split-multiplication" ||
+                !splitSolved
+            ) {
+                return;
+            }
+
+            splitSolved = false;
+
+            if (
+                currentProblem <
+                getCurrentUnit().problems.length - 1
+            ) {
+                currentProblem++;
+                updateDisplay();
+            } else {
+                showResultScreen();
+            }
+        });
+    }
+
+    // 問題を開いたときは非表示
+    button.style.display = "none";
+}
+
+function showSplitNextButton() {
+    const button = document.getElementById("split-next-btn");
+
+    if (!button) return;
+
+    const isLastProblem =
+        currentProblem >=
+        getCurrentUnit().problems.length - 1;
+
+    button.textContent = isLastProblem
+        ? "けっかを見る"
+        : "つぎのもんだいへ";
+
+    button.style.display = "block";
+}
+
     
 function checkAnswer() {
     const data = getCurrentProblem();
+    // 正解後の重複した答え合わせを防ぐ
+    if (data.style === "split-multiplication" && splitSolved) {
+        return;
+    }
 
     const res = document.getElementById("result-message");
     const hintBtn = document.getElementById("hint-btn");
@@ -1784,14 +1881,21 @@ function checkAnswer() {
     }
 
     
+    
     if (isValueCorrect) {
 
         // かけ算の計算①では、正解時に計算過程を表示
         if (data.style === "split-multiplication") {
 
+            // 正解済みの状態にする
+            splitSolved = true;
+
             const reflection = createSplitReflection(data);
 
             res.innerText = "せいかい！\n\n" + reflection;
+
+            // 正解後の「つぎへ」ボタンを表示
+            showSplitNextButton();
 
         } else {
             res.innerText = "せいかい！";
@@ -1805,23 +1909,23 @@ function checkAnswer() {
         hintErrorType = null;
         hintStep = 0;
 
-        // かけ算の計算①は振り返りの時間を長めに確保
-        const waitTime =
-            data.style === "split-multiplication"
-                ? 6000
-                : 2000;
+        if (data.style !== "split-multiplication") {
 
-        setTimeout(function () {
-            if (
-                currentProblem <
-                getCurrentUnit().problems.length - 1
-            ) {
-                currentProblem++;
-                updateDisplay();
-            } else {
-                showResultScreen();
-            }
-        }, waitTime);
+            // ほかの単元は従来どおり2秒後に進む
+            setTimeout(function () {
+                if (
+                    currentProblem <
+                    getCurrentUnit().problems.length - 1
+                ) {
+                    currentProblem++;
+                    updateDisplay();
+                } else {
+                    showResultScreen();
+                }
+            }, 2000);
+        }
+
+
 
     } else if (isAlmostCorrect) {
 
