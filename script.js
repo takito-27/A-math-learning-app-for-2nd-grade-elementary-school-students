@@ -4,6 +4,9 @@ let mistakeCount = [];
 let currentProblemPage = 0;
 const problemsPerPage = 3;
 
+// 現在表示しているヒントの段階を管理
+let hintStep = 0;
+
 function getCurrentProblem() {
     return unitData[currentUnit - 1].problems[currentProblem];
 }
@@ -262,8 +265,16 @@ const unitData = [
             renderDifficulty(data.difficulty ?? 1);
             
             document.getElementById("problem-text").innerText = data.text;
-            document.getElementById('hint-display').innerText = data.hint;
-            document.getElementById('hint-btn').style.display = "none";
+
+            // ヒントの進行状況を初期化
+            hintStep = 0;
+
+            const hintDisplay = document.getElementById("hint-display");
+            const hintButton = document.getElementById("hint-btn");
+
+            hintDisplay.innerText = "";
+            hintDisplay.style.display = "none";
+            hintButton.style.display = "none";
             // 画面を初期化
             document.getElementById("formula-section-container").style.display = "block";
             const tableArea = document.getElementById("table-area");
@@ -1270,18 +1281,43 @@ function updateSplitFormula(partCount) {
     }
 
     // ヒントウィンドウを開く
+
 function toggleHint() {
 
     const modal = document.getElementById("hint-modal");
     const hint = document.getElementById("hint-display");
+    const data = getCurrentProblem();
 
-    // ヒント内容は表示状態にする
+    if (data.style === "split-multiplication") {
+
+        const hints = [
+            "ならった九九で計算できるように、図を分けてみよう。",
+            "分けたそれぞれの部分には、何こずつ、何だんあるかな？",
+            "それぞれの部分を、かけ算の式で表してみよう。",
+            "それぞれのかけ算の答えをたすと、ぜんぶで何こになるかな？"
+        ];
+
+        // ボタンを押すたびに次のヒントへ進む
+        hintStep = Math.min(hintStep + 1, hints.length);
+
+        // 現在の段階に対応するヒントを表示
+        hint.innerText = hints[hintStep - 1];
+
+    } else {
+
+        // ほかの単元は従来のヒントを表示
+        hint.innerText = data.hint;
+
+    }
+
+    // ヒントを表示
     hint.style.display = "block";
 
     // ウィンドウを表示
     modal.style.display = "flex";
     modal.setAttribute("aria-hidden", "false");
 }
+
 
 
 // ヒントウィンドウを閉じる
