@@ -7,6 +7,9 @@ const problemsPerPage = 3;
 // 現在表示しているヒントの段階を管理
 let hintStep = 0;
 
+// 最後に判定した間違いの種類
+let hintErrorType = null;
+
 function getCurrentProblem() {
     return unitData[currentUnit - 1].problems[currentProblem];
 }
@@ -268,6 +271,8 @@ const unitData = [
 
             // ヒントの進行状況を初期化
             hintStep = 0;
+            hintErrorType = null;
+
 
             const hintDisplay = document.getElementById("hint-display");
             const hintButton = document.getElementById("hint-btn");
@@ -1282,38 +1287,79 @@ function updateSplitFormula(partCount) {
 
     // ヒントウィンドウを開く
 
-function toggleHint() {
 
+function toggleHint() {
     const modal = document.getElementById("hint-modal");
     const hint = document.getElementById("hint-display");
     const data = getCurrentProblem();
 
     if (data.style === "split-multiplication") {
 
-        const hints = [
-            "ならった九九で計算できるように、図を分けてみよう。",
-            "分けたそれぞれの部分には、何こずつ、何だんあるかな？",
-            "それぞれの部分を、かけ算の式で表してみよう。",
-            "それぞれのかけ算の答えをたすと、ぜんぶで何こになるかな？"
-        ];
+        // 間違いの種類に応じたヒント
+        const hintGroups = {
+            noSplit: [
+                "ならった九九で計算できるように、図を分けてみよう。",
+                "どこで分けると、知っている九九で計算できるかな？",
+                "たとえば、10こ分と残りに分ける方法や、9こ分と残りに分ける方法もあるよ。"
+            ],
 
-        // ボタンを押すたびに次のヒントへ進む
+            incomplete: [
+                "まだ書いていないところがあるよ。空いているところをさがしてみよう。",
+                "図を分けたら、それぞれのかけ算の式を書いてみよう。",
+                "かけ算の答えが出たら、それらをたして、ぜんぶの数を求めよう。"
+            ],
+
+            formula: [
+                "図の分け方と、かけ算の式が合っているかたしかめよう。",
+                "分けたそれぞれの部分には、横に何こ、たてに何だんあるかな？",
+                "1だんにある数と、だんの数を使って、かけ算の式を作ってみよう。"
+            ],
+
+            multiplication: [
+                "分けたそれぞれの部分のかけ算を、もう一度たしかめよう。",
+                "かけ算の式に書いた数を見て、九九を使って計算してみよう。",
+                "それぞれの部分の答えが、図の数と合っているか数えてみよう。"
+            ],
+
+            addition: [
+                "それぞれのかけ算の答えを、たし算に使っているかな？",
+                "分けた部分の答えを、ひとつずつたし算の式に書いてみよう。",
+                "たし算の答えは、図にあるぜんぶの数と同じになるはずだよ。"
+            ],
+
+            reverse: [
+                "かけ算の式の数のじゅんばんを、もう一度見てみよう。",
+                "1だんに何こあるかな？ それが何だんあるかな？",
+                "図の『1だんの数 × だんの数』のじゅんばんで式を書いてみよう。"
+            ],
+
+            // 判定結果が取得できなかった場合の共通ヒント
+            default: [
+                "図と式を、もう一度見くらべてみよう。",
+                "分けたそれぞれの部分の数を、かけ算で求めてみよう。",
+                "それぞれの答えをたして、ぜんぶの数を求めよう。"
+            ]
+        };
+
+        const hints =
+            hintGroups[hintErrorType] || hintGroups.default;
+
+        // ヒントを1段階ずつ進める
         hintStep = Math.min(hintStep + 1, hints.length);
 
-        // 現在の段階に対応するヒントを表示
+        // 現在の段階のヒントを表示
         hint.innerText = hints[hintStep - 1];
 
     } else {
 
-        // ほかの単元は従来のヒントを表示
+        // ほかの単元は従来のヒントを維持
         hint.innerText = data.hint;
-
     }
 
     // ヒントを表示
     hint.style.display = "block";
 
-    // ウィンドウを表示
+    // モーダルウィンドウを開く
     modal.style.display = "flex";
     modal.setAttribute("aria-hidden", "false");
 }
@@ -1433,111 +1479,148 @@ function closeHintFromBackground(event) {
         activeInputId = null;
     });
 
-    function checkAnswer() {
-        const data = getCurrentProblem();
-        
-        const res = document.getElementById('result-message');
-        const hintBtn = document.getElementById('hint-btn');
-        
-        // かけ算の計算①：アレイ図が分割されているか確認
-        if (data.style === "split-multiplication") {
+   
+function checkAnswer() {
+    const data = getCurrentProblem();
 
-            const array = document.querySelector(
-                "#original-array [data-split-position]"
-            );
+    const res = document.getElementById("result-message");
+    const hintBtn = document.getElementById("hint-btn");
+    const hintDisplay = document.getElementById("hint-display");
 
-            // 図がまだ分割されていない場合
-            if (data.style === "split-multiplication") {
-                const array = document.querySelector(
-                    "#original-array [data-split-positions]"
+    // かけ算の計算①：図が分割されているか確認
+    if (data.style === "split-multiplication") {
+        const array = document.querySelector(
+            "#original-array [data-split-positions]"
+        );
+
+        let splitPositions = [];
+
+        if (array) {
+            try {
+                splitPositions = JSON.parse(
+                    array.dataset.splitPositions
                 );
-
-                let splitPositions = [];
-
-                if (array) {
-                    try {
-                        splitPositions = JSON.parse(
-                            array.dataset.splitPositions
-                        );
-                    } catch (error) {
-                        splitPositions = [];
-                    }
-                }
-
-                if (!Array.isArray(splitPositions) ||
-                    splitPositions.length === 0) {
-                    res.innerText = "図を分けてね！";
-                    res.style.color = "orange";
-                    hintBtn.style.display = "none";
-                    return;
-                }
+            } catch (error) {
+                splitPositions = [];
             }
         }
-        if(data.style === "normal"){
-            if(checkNormalAnswer(data)){
-                res.innerText = "せいかい！！";
-                res.style.color = "red";
-                hintBtn.style.display = "none";
-                document.getElementById("hint-display").style.display = "none";
 
-                setTimeout(function(){
-                    if(currentProblem < getCurrentUnit().problems.length - 1){
-                        currentProblem++;
-                        updateDisplay();
-                    }else{
-                        showResultScreen();
-                    }
+        if (
+            !Array.isArray(splitPositions) ||
+            splitPositions.length === 0
+        ) {
+            res.innerText = "図を分けてね！";
+            res.style.color = "orange";
 
-                }, 2000);
+            hintErrorType = "noSplit";
+            hintStep = 0;
 
-            }else{
-                mistakeCount[currentProblem]++;
-                res.innerText = "ちがうよ！";
-                res.style.color = "blue";
-                hintBtn.style.display = "inline-block";
-            }
-        return;
+            // 図の分け方についてヒントを表示できるようにする
+            hintBtn.style.display = "inline-block";
+            return;
         }
-        let isValueCorrect = true;
-        let isAlmostCorrect = false;
+    }
 
-        if(data.style==="split-multiplication"){
-            const result = checkSplitAnswer(data);
-            isValueCorrect = result.correct;
-            isAlmostCorrect = result.almost;
-        } else if(data.style==="grid-table-multiplication"){
-            isValueCorrect = checkGridTableAnswer(data);
-        } else if(data.style==="chocolate-multiplication"){
-            isValueCorrect = checkChocolateAnswer(data);
-        }
-
-        if (isValueCorrect) {
-            res.innerText = "せいかい！";
+    // 従来の九九の計算
+    if (data.style === "normal") {
+        if (checkNormalAnswer(data)) {
+            res.innerText = "せいかい！！";
             res.style.color = "red";
             hintBtn.style.display = "none";
-            document.getElementById("hint-display").style.display = "none";
-            setTimeout(function(){
-                if(currentProblem < getCurrentUnit().problems.length - 1){
+            hintDisplay.style.display = "none";
+
+            setTimeout(function () {
+                if (
+                    currentProblem <
+                    getCurrentUnit().problems.length - 1
+                ) {
                     currentProblem++;
                     updateDisplay();
-                }else{
+                } else {
                     showResultScreen();
                 }
+            }, 2000);
 
-        },2000);
-
-        } else if (isAlmostCorrect) {
-            res.innerText = "おしい！";
-            res.style.color = "orange";
-            hintBtn.style.display = "none";
         } else {
             mistakeCount[currentProblem]++;
-            res.innerText = "ちがうよ！"; 
+            res.innerText = "ちがうよ！";
             res.style.color = "blue";
             hintBtn.style.display = "inline-block";
         }
-    
+
+        return;
     }
+
+    let isValueCorrect = true;
+    let isAlmostCorrect = false;
+    let errorType = null;
+
+    if (data.style === "split-multiplication") {
+        const result = checkSplitAnswer(data);
+
+        isValueCorrect = result.correct;
+        isAlmostCorrect = result.almost;
+        errorType = result.errorType;
+
+    } else if (data.style === "grid-table-multiplication") {
+        isValueCorrect = checkGridTableAnswer(data);
+
+    } else if (data.style === "chocolate-multiplication") {
+        isValueCorrect = checkChocolateAnswer(data);
+    }
+
+    // 間違いの種類が変わったらヒントを最初から表示
+    if (data.style === "split-multiplication") {
+        if (hintErrorType !== errorType) {
+            hintStep = 0;
+        }
+
+        hintErrorType = errorType;
+    }
+
+    if (isValueCorrect) {
+        res.innerText = "せいかい！";
+        res.style.color = "red";
+
+        hintBtn.style.display = "none";
+        hintDisplay.style.display = "none";
+
+        hintErrorType = null;
+        hintStep = 0;
+
+        setTimeout(function () {
+            if (
+                currentProblem <
+                getCurrentUnit().problems.length - 1
+            ) {
+                currentProblem++;
+                updateDisplay();
+            } else {
+                showResultScreen();
+            }
+        }, 2000);
+
+    } else if (isAlmostCorrect) {
+        res.innerText = "おしい！";
+        res.style.color = "orange";
+
+        // 「おしい！」の場合もヒントを利用できる
+        if (data.style === "split-multiplication") {
+            hintBtn.style.display = "inline-block";
+        } else {
+            hintBtn.style.display = "none";
+        }
+
+    } else {
+        mistakeCount[currentProblem]++;
+
+        res.innerText = "ちがうよ！";
+        res.style.color = "blue";
+
+        hintBtn.style.display = "inline-block";
+    }
+}
+
 function checkNormalAnswer(data){
     const value = document.getElementById("vAns").value;
     return Number(value) === data.answer;
@@ -1545,13 +1628,20 @@ function checkNormalAnswer(data){
 
 
 
+
 function checkSplitAnswer(data) {
+    const incorrect = (errorType) => ({
+        correct: false,
+        almost: false,
+        errorType
+    });
+
     const array = document.querySelector(
         "#original-array [data-split-positions]"
     );
 
     if (!array) {
-        return { correct: false, almost: false };
+        return incorrect("noSplit");
     }
 
     let splitPositions;
@@ -1561,12 +1651,14 @@ function checkSplitAnswer(data) {
             array.dataset.splitPositions
         );
     } catch (error) {
-        return { correct: false, almost: false };
+        return incorrect("noSplit");
     }
 
-    if (!Array.isArray(splitPositions) ||
-        splitPositions.length === 0) {
-        return { correct: false, almost: false };
+    if (
+        !Array.isArray(splitPositions) ||
+        splitPositions.length === 0
+    ) {
+        return incorrect("noSplit");
     }
 
     const columns = Number(data.originalColumns);
@@ -1588,7 +1680,7 @@ function checkSplitAnswer(data) {
 
     const partCount = widths.length;
 
-    // 正しいかけ算の式を生成
+    // 図に対応する正しいかけ算を生成
     const expectedMultiplications = widths.map(width => ({
         first: width,
         second: rows,
@@ -1604,7 +1696,7 @@ function checkSplitAnswer(data) {
         const product = document.getElementById(`mul-${i}-2`);
 
         if (!first || !second || !product) {
-            return { correct: false, almost: false };
+            return incorrect("incomplete");
         }
 
         inputMultiplications.push({
@@ -1621,7 +1713,7 @@ function checkSplitAnswer(data) {
         const input = document.getElementById(`add-${i}`);
 
         if (!input) {
-            return { correct: false, almost: false };
+            return incorrect("incomplete");
         }
 
         additionValues.push(input.value.trim());
@@ -1630,14 +1722,10 @@ function checkSplitAnswer(data) {
     const answerInput = document.getElementById("add-answer");
 
     if (!answerInput) {
-        return { correct: false, almost: false };
+        return incorrect("incomplete");
     }
 
-    // 入力値が正の整数であるか確認
-    function isNumber(value) {
-        return /^\d+$/.test(value);
-    }
-
+    // すべての入力値を確認
     const allValues = [
         ...inputMultiplications.flatMap(item => [
             item.first,
@@ -1648,31 +1736,17 @@ function checkSplitAnswer(data) {
         answerInput.value.trim()
     ];
 
-    if (!allValues.every(isNumber)) {
-        return { correct: false, almost: false };
+    if (allValues.some(value => value === "")) {
+        return incorrect("incomplete");
     }
 
-    // 入力された式と期待される式を比較
-    function matches(input, expected, allowReverse) {
-        const first = Number(input.first);
-        const second = Number(input.second);
-        const product = Number(input.product);
-
-        const normal =
-            first === expected.first &&
-            second === expected.second &&
-            product === expected.product;
-
-        const reverse =
-            first === expected.second &&
-            second === expected.first &&
-            product === expected.product;
-
-        return normal || (allowReverse && reverse);
+    if (!allValues.every(value => /^\d+$/.test(value))) {
+        return incorrect("incomplete");
     }
 
-    // 同じ式が複数ある場合も正しく照合する
-    function checkMultiplications(allowReverse) {
+    // かけ算の数の組み合わせを比較する
+    // 同じ式が複数ある場合にも対応
+    function checkMultiplications(checkType) {
         const used = new Array(
             expectedMultiplications.length
         ).fill(false);
@@ -1683,27 +1757,64 @@ function checkSplitAnswer(data) {
             for (let i = 0; i < expectedMultiplications.length; i++) {
                 if (used[i]) continue;
 
-                if (matches(
-                    input,
-                    expectedMultiplications[i],
-                    allowReverse
-                )) {
+                const expected = expectedMultiplications[i];
+
+                const first = Number(input.first);
+                const second = Number(input.second);
+                const product = Number(input.product);
+
+                const normalOperands =
+                    first === expected.first &&
+                    second === expected.second;
+
+                const reverseOperands =
+                    first === expected.second &&
+                    second === expected.first;
+
+                let matches = false;
+
+                if (checkType === "operands") {
+                    matches = normalOperands;
+                } else if (checkType === "reverse") {
+                    matches = normalOperands || reverseOperands;
+                } else if (checkType === "complete") {
+                    matches =
+                        normalOperands &&
+                        product === expected.product;
+                } else if (checkType === "completeReverse") {
+                    matches =
+                        (normalOperands || reverseOperands) &&
+                        product === expected.product;
+                }
+
+                if (matches) {
                     used[i] = true;
                     found = true;
                     break;
                 }
             }
 
-            if (!found) return false;
+            if (!found) {
+                return false;
+            }
         }
 
         return true;
     }
 
-    const multCorrect = checkMultiplications(false);
-    const multAlmost = checkMultiplications(true);
+    const operandsCorrect =
+        checkMultiplications("operands");
 
-    // たし算の各項を順序に関係なく比較
+    const operandsAllowReverse =
+        checkMultiplications("reverse");
+
+    const multiplicationCorrect =
+        checkMultiplications("complete");
+
+    const multiplicationAllowReverse =
+        checkMultiplications("completeReverse");
+
+    // たし算の項を順序に関係なく比較
     const expectedProducts = expectedMultiplications
         .map(item => item.product)
         .sort((a, b) => a - b);
@@ -1712,22 +1823,48 @@ function checkSplitAnswer(data) {
         .map(Number)
         .sort((a, b) => a - b);
 
-    const addCorrect =
+    const additionCorrect =
         expectedProducts.every(
             (value, index) =>
                 value === enteredProducts[index]
         ) &&
         Number(answerInput.value.trim()) === columns * rows;
 
-    if (multCorrect && addCorrect) {
-        return { correct: true, almost: false };
+    // すべて正しい
+    if (multiplicationCorrect && additionCorrect) {
+        return {
+            correct: true,
+            almost: false,
+            errorType: "correct"
+        };
     }
 
-    if (multAlmost && addCorrect) {
-        return { correct: false, almost: true };
+    // かけ算の数の順序だけが違う
+    if (multiplicationAllowReverse && additionCorrect) {
+        return {
+            correct: false,
+            almost: true,
+            errorType: "reverse"
+        };
     }
 
-    return { correct: false, almost: false };
+    // 図と式の数が一致していない
+    if (!operandsAllowReverse) {
+        return incorrect("formula");
+    }
+
+    // かけ算の答えが違う
+    if (!multiplicationAllowReverse) {
+        return incorrect("multiplication");
+    }
+
+    // 数の順序が逆で、ほかにも間違いがある
+    if (!operandsCorrect) {
+        return incorrect("reverse");
+    }
+
+    // たし算が違う
+    return incorrect("addition");
 }
 
 
