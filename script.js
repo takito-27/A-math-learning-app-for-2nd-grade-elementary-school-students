@@ -1716,26 +1716,62 @@ function createSplitReflection(data) {
    かけ算の計算①：正解後の次へボタン
    ======================================== */
 
+
+/* ========================================
+   かけ算の計算①：正解ポップアップ
+   ======================================== */
+
 function setupSplitNextButton() {
-    const resultMessage = document.getElementById("result-message");
 
-    if (!resultMessage) return;
+    // 以前の小さなボタンがあれば削除
+    const oldButton = document.getElementById("split-next-btn");
 
-    let button = document.getElementById("split-next-btn");
+    if (oldButton) {
+        oldButton.remove();
+    }
 
-    // ボタンは最初の1回だけ生成する
-    if (!button) {
-        button = document.createElement("button");
-        button.id = "split-next-btn";
-        button.type = "button";
-        button.className = "btn";
+    let modal = document.getElementById("split-success-modal");
 
-        resultMessage.insertAdjacentElement("afterend", button);
+    // ポップアップは一度だけ作成
+    if (!modal) {
 
-        button.addEventListener("click", function () {
+        modal = document.createElement("div");
+        modal.id = "split-success-modal";
+        modal.className = "split-success-modal";
+        modal.setAttribute("aria-hidden", "true");
+
+        modal.innerHTML = `
+            <div class="split-success-window"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-labelledby="split-success-title">
+
+                <h2 id="split-success-title">
+                    せいかい！
+                </h2>
+
+                <div id="split-success-content"
+                     class="split-success-content">
+                </div>
+
+                <button type="button"
+                        id="split-success-next"
+                        class="split-success-next">
+                    つぎのもんだいへ
+                </button>
+
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const nextButton =
+            document.getElementById("split-success-next");
+
+        nextButton.addEventListener("click", function () {
+
             const data = getCurrentProblem();
 
-            // 正解していなければ進めない
             if (
                 data.style !== "split-multiplication" ||
                 !splitSolved
@@ -1743,7 +1779,12 @@ function setupSplitNextButton() {
                 return;
             }
 
+            // 連続クリックを防ぐ
+            nextButton.disabled = true;
             splitSolved = false;
+
+            modal.classList.remove("is-visible");
+            modal.setAttribute("aria-hidden", "true");
 
             if (
                 currentProblem <
@@ -1757,25 +1798,54 @@ function setupSplitNextButton() {
         });
     }
 
-    // 問題を開いたときは非表示
-    button.style.display = "none";
+    // 新しい問題では非表示にする
+    modal.classList.remove("is-visible");
+    modal.setAttribute("aria-hidden", "true");
+
+    const nextButton =
+        document.getElementById("split-success-next");
+
+    if (nextButton) {
+        nextButton.disabled = false;
+    }
 }
 
-function showSplitNextButton() {
-    const button = document.getElementById("split-next-btn");
 
-    if (!button) return;
+function showSplitNextButton() {
+
+    const modal =
+        document.getElementById("split-success-modal");
+
+    const content =
+        document.getElementById("split-success-content");
+
+    const nextButton =
+        document.getElementById("split-success-next");
+
+    if (!modal || !content || !nextButton) return;
+
+    const data = getCurrentProblem();
+
+    // 児童が実際に選んだ分け方を表示
+    content.textContent = createSplitReflection(data);
 
     const isLastProblem =
         currentProblem >=
         getCurrentUnit().problems.length - 1;
 
-    button.textContent = isLastProblem
+    nextButton.textContent = isLastProblem
         ? "けっかを見る"
         : "つぎのもんだいへ";
 
-    button.style.display = "block";
+    nextButton.disabled = false;
+
+    // ポップアップを表示
+    modal.classList.add("is-visible");
+    modal.setAttribute("aria-hidden", "false");
+
+    nextButton.focus();
 }
+
 
     
 function checkAnswer() {
@@ -1890,11 +1960,10 @@ function checkAnswer() {
             // 正解済みの状態にする
             splitSolved = true;
 
-            const reflection = createSplitReflection(data);
+            // 問題画面側には短い正解メッセージのみ表示
+            res.innerText = "せいかい！";
 
-            res.innerText = "せいかい！\n\n" + reflection;
-
-            // 正解後の「つぎへ」ボタンを表示
+            // 振り返りは専用ポップアップに表示
             showSplitNextButton();
 
         } else {
