@@ -705,6 +705,69 @@ function updateSplitFormula(partCount) {
 }
 
 
+function getSplitHintInfo(data) {
+    const array = document.querySelector(
+        "#original-array [data-split-positions]"
+    );
+
+    if (!array) return null;
+
+    let positions;
+
+    try {
+        positions = JSON.parse(array.dataset.splitPositions);
+    } catch (error) {
+        return null;
+    }
+
+    if (!Array.isArray(positions) || positions.length === 0) {
+        return null;
+    }
+
+    const columns = Number(data.originalColumns);
+    const rows = Number(data.originalRows);
+
+    if (
+        !Number.isInteger(columns) ||
+        !Number.isInteger(rows) ||
+        columns < 2 ||
+        rows < 1
+    ) {
+        return null;
+    }
+
+    // 分割位置を小さい順に並べる
+    const sortedPositions = [...positions].sort((a, b) => a - b);
+
+    // 不正な分割位置がないか確認
+    if (
+        sortedPositions.some(
+            (position, index) =>
+                !Number.isInteger(position) ||
+                position <= 0 ||
+                position >= columns ||
+                (index > 0 && position === sortedPositions[index - 1])
+        )
+    ) {
+        return null;
+    }
+
+    // 各部分の横の数を求める
+    const boundaries = [0, ...sortedPositions, columns];
+    const widths = [];
+
+    for (let i = 0; i < boundaries.length - 1; i++) {
+        widths.push(boundaries[i + 1] - boundaries[i]);
+    }
+
+    return {
+        widths,
+        rows,
+        columns
+    };
+}
+
+
 
     function showSplitProblem(data){
         document.getElementById('options-section').style.display = "block";
@@ -1342,8 +1405,46 @@ function toggleHint() {
             ]
         };
 
-        const hints =
-            hintGroups[hintErrorType] || hintGroups.default;
+        
+        const hints = [
+            ...(hintGroups[hintErrorType] || hintGroups.default)
+        ];
+
+        // 現在の図の分け方を取得
+        const splitInfo = getSplitHintInfo(data);
+
+        if (splitInfo) {
+            const widthText = splitInfo.widths
+                .map(width => `${width}こ`)
+                .join("、");
+
+            const splitDescription =
+                `いまの図は、横に${widthText}ある部分に分かれているね。` +
+                `どの部分も、たてに${splitInfo.rows}だんあるよ。`;
+
+            // 図と式の対応を考えるヒントを具体化
+            if (
+                hintErrorType === "formula" ||
+                hintErrorType === "reverse"
+            ) {
+                hints[1] = splitDescription;
+            }
+
+            // かけ算の答えを考えるヒントを具体化
+            if (hintErrorType === "multiplication") {
+                hints[1] =
+                    splitDescription +
+                    "それぞれの部分を、九九を使って計算してみよう。";
+            }
+
+            // たし算のヒントを具体化
+            if (hintErrorType === "addition") {
+                hints[1] =
+                    splitDescription +
+                    "それぞれの部分のかけ算の答えを、ぜんぶたしてみよう。";
+            }
+        }
+
 
         // ヒントを1段階進める（最大3段階）
         hintStep = Math.min(hintStep + 1, hints.length);
