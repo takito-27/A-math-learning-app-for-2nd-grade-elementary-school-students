@@ -1288,14 +1288,16 @@ function updateSplitFormula(partCount) {
     // ヒントウィンドウを開く
 
 
+
 function toggleHint() {
     const modal = document.getElementById("hint-modal");
     const hint = document.getElementById("hint-display");
+    const title = document.getElementById("hint-window-title");
     const data = getCurrentProblem();
 
+    // かけ算の計算①：間違いに応じた段階的ヒント
     if (data.style === "split-multiplication") {
 
-        // 間違いの種類に応じたヒント
         const hintGroups = {
             noSplit: [
                 "ならった九九で計算できるように、図を分けてみよう。",
@@ -1333,7 +1335,6 @@ function toggleHint() {
                 "図の『1だんの数 × だんの数』のじゅんばんで式を書いてみよう。"
             ],
 
-            // 判定結果が取得できなかった場合の共通ヒント
             default: [
                 "図と式を、もう一度見くらべてみよう。",
                 "分けたそれぞれの部分の数を、かけ算で求めてみよう。",
@@ -1344,15 +1345,40 @@ function toggleHint() {
         const hints =
             hintGroups[hintErrorType] || hintGroups.default;
 
-        // ヒントを1段階ずつ進める
+        // ヒントを1段階進める（最大3段階）
         hintStep = Math.min(hintStep + 1, hints.length);
 
-        // 現在の段階のヒントを表示
-        hint.innerText = hints[hintStep - 1];
+        // タイトルに現在の段階を表示
+        title.innerText = `ヒント ${hintStep}/${hints.length}`;
+
+        // 過去のヒントも含めて表示
+        hint.replaceChildren();
+
+        for (let i = 0; i < hintStep; i++) {
+            const item = document.createElement("div");
+            item.className = "hint-step-item";
+
+            const stepLabel = document.createElement("strong");
+            stepLabel.innerText = `ヒント ${i + 1}`;
+
+            const stepText = document.createElement("p");
+            stepText.innerText = hints[i];
+
+            item.appendChild(stepLabel);
+            item.appendChild(stepText);
+
+            // 現在のヒントを強調
+            if (i === hintStep - 1) {
+                item.classList.add("hint-step-current");
+            }
+
+            hint.appendChild(item);
+        }
 
     } else {
 
-        // ほかの単元は従来のヒントを維持
+        // ほかの単元は従来のヒントを表示
+        title.innerText = "ヒント";
         hint.innerText = data.hint;
     }
 

@@ -1240,3 +1240,35 @@ body {
         font-size: 1.1rem;
     }
 }
+
+
+/* 段階的ヒントの表示 */
+
+.hint-step-item {
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    background-color: #ffffff;
+    line-height: 1.7;
+}
+
+.hint-step-item strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #555555;
+}
+
+.hint-step-item p {
+    margin: 0;
+}
+
+/* 現在のヒントを強調 */
+.hint-step-current {
+    background-color: #fff3df;
+    border: 2px solid #ff922b;
+}
+
+.hint-step-current strong {
+    color: #c66a00;
+}
