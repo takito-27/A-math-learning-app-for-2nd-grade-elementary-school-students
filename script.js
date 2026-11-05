@@ -431,105 +431,152 @@ function createOriginalArray(columns, rows) {
                 : "");
     }
 
-    function renderLines() {
-        lineLayer.innerHTML = "";
+    
+function renderLines() {
+    lineLayer.innerHTML = "";
 
-        const gridWidth = container.clientWidth;
-        const gap = 5;
-        const cellWidth =
-            (gridWidth - gap * (columns - 1)) / columns;
+    const gridWidth = container.clientWidth;
+    const gap = 5;
+    const cellWidth =
+        (gridWidth - gap * (columns - 1)) / columns;
+    const step = cellWidth + gap;
 
-        splitPositions.forEach(position => {
-            const line = document.createElement("div");
-
-            const x =
-                position * cellWidth +
-                (position - 0.5) * gap;
-
-            line.style.position = "absolute";
-            line.style.left = `${x}px`;
-            line.style.top = "0";
-            line.style.height = "100%";
-            line.style.width = "16px";
-            line.style.transform = "translateX(-50%)";
-            line.style.cursor = "ew-resize";
-            line.style.touchAction = "none";
-            line.style.pointerEvents = "auto";
-            line.style.zIndex = "10";
-
-            // 中央のオレンジ色の区切り線
-            const visualLine = document.createElement("div");
-            visualLine.style.position = "absolute";
-            visualLine.style.left = "50%";
-            visualLine.style.top = "0";
-            visualLine.style.height = "100%";
-            visualLine.style.width = "4px";
-            visualLine.style.transform = "translateX(-50%)";
-            visualLine.style.backgroundColor = "#e17b39";
-            visualLine.style.borderRadius = "3px";
-
-            line.appendChild(visualLine);
-
-            let startX = 0;
-            let moved = false;
-
-            line.addEventListener("pointerdown", event => {
-                event.preventDefault();
-                event.stopPropagation();
-
-                startX = event.clientX;
-                moved = false;
-
-                line.setPointerCapture(event.pointerId);
-            });
-
-            line.addEventListener("pointermove", event => {
-                if (!line.hasPointerCapture(event.pointerId)) {
-                    return;
-                }
-
-                if (Math.abs(event.clientX - startX) > 5) {
-                    moved = true;
-                }
-            });
-
-            line.addEventListener("pointerup", event => {
-                event.preventDefault();
-                event.stopPropagation();
-
-                const endX = event.clientX;
-                const distance = endX - startX;
-
-                if (!moved && Math.abs(distance) <= 5) {
-                    // ドラッグせずクリックした場合は削除
-                    splitPositions = splitPositions.filter(
-                        value => value !== position
-                    );
-                } else {
-                    // 移動先の列境界を計算
-                    const step = cellWidth + gap;
-                    const moveCount = Math.round(distance / step);
-                    const newPosition = position + moveCount;
-
-                    if (
-                        newPosition > 0 &&
-                        newPosition < columns &&
-                        !splitPositions.includes(newPosition)
-                    ) {
-                        splitPositions = splitPositions.map(
-                            value => value === position
-                                ? newPosition
-                                : value
-                        );
-                    }
-                }
-
-                updateArray();
-            });
-
-            lineLayer.appendChild(line);
-        });
+    // 列の境界位置を取得
+    function getBoundaryX(position) {
+        return position * cellWidth +
+            (position - 0.5) * gap;
     }
+
+    splitPositions.forEach(position => {
+        const line = document.createElement("div");
+
+        const initialX = getBoundaryX(position);
+
+        line.style.position = "absolute";
+        line.style.left = `${initialX}px`;
+        line.style.top = "0";
+        line.style.height = "100%";
+        line.style.width = "24px";
+        line.style.transform = "translateX(-50%)";
+        line.style.cursor = "ew-resize";
+        line.style.touchAction = "none";
+        line.style.pointerEvents = "auto";
+        line.style.zIndex = "10";
+        line.style.willChange = "transform";
+
+        const visualLine = document.createElement("div");
+
+        visualLine.style.position = "absolute";
+        visualLine.style.left = "50%";
+        visualLine.style.top = "0";
+        visualLine.style.height = "100%";
+        visualLine.style.width = "4px";
+        visualLine.style.transform = "translateX(-50%)";
+        visualLine.style.backgroundColor = "#e17b39";
+        visualLine.style.borderRadius = "3px";
+        visualLine.style.pointerEvents = "none";
+
+        line.appendChild(visualLine);
+
+        let startX = 0;
+        let currentX = 0;
+        let dragging = false;
+        let moved = false;
+        let frameId = null;
+
+        function drawPosition() {
+            line.style.transform =
+                `translateX(calc(-50% + ${currentX}px))`;
+            frameId = null;
+        }
+
+        line.addEventListener("pointerdown", event => {
+            if (event.button !== 0) return;
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            startX = event.clientX;
+            currentX = 0;
+            dragging = true;
+            moved = false;
+
+            line.setPointerCapture(event.pointerId);
+        });
+
+        line.addEventListener("pointermove", event => {
+            if (!dragging) return;
+
+            const distance = event.clientX - startX;
+
+            if (Math.abs(distance) > 3) {
+                moved = true;
+            }
+
+            // ドラッグ中は分割線だけを移動
+            currentX = distance;
+
+            if (frameId === null) {
+                frameId = requestAnimationFrame(drawPosition);
+            }
+        });
+
+        line.addEventListener("pointerup", event => {
+            if (!dragging) return;
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            dragging = false;
+
+            if (frameId !== null) {
+                cancelAnimationFrame(frameId);
+                frameId = null;
+            }
+
+            const distance = event.clientX - startX;
+
+            if (!moved && Math.abs(distance) <= 3) {
+                // クリックした場合は削除
+                splitPositions = splitPositions.filter(
+                    value => value !== position
+                );
+            } else {
+                // ドラッグ終了時に最も近い列境界へ吸着
+                const moveCount = Math.round(distance / step);
+                const newPosition = position + moveCount;
+
+                if (
+                    newPosition > 0 &&
+                    newPosition < columns &&
+                    !splitPositions.includes(newPosition)
+                ) {
+                    splitPositions = splitPositions.map(
+                        value => value === position
+                            ? newPosition
+                            : value
+                    );
+                }
+            }
+
+            updateArray();
+        });
+
+        line.addEventListener("pointercancel", () => {
+            dragging = false;
+
+            if (frameId !== null) {
+                cancelAnimationFrame(frameId);
+                frameId = null;
+            }
+
+            renderLines();
+        });
+
+        lineLayer.appendChild(line);
+    });
+}
+
 
     resetButton.addEventListener("click", () => {
         splitPositions = [];
