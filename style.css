@@ -1589,83 +1589,112 @@ button:disabled {
 }
 
 
+
 /* ==========================================
-   かけ算のもんだい①：研究授業用レイアウト
+   かけ算のもんだい①：タブレット横向き
    ========================================== */
 
-#problem-screen.split-layout {
-    display: grid !important;
-
-    /* 左：アレイ図 / 右：計算式 */
-    grid-template-columns:
-        minmax(0, 42%) minmax(0, 58%);
-
-    grid-template-rows:
-        auto auto auto auto auto auto auto;
-
-    column-gap: 16px;
-    row-gap: 5px;
-
-    align-content: start;
-
-    width: min(96vw, 1200px);
-    min-height: 0;
-    margin: 5px auto;
+/* ほかの単元では従来の構造を維持 */
+.split-answer-panel {
+    display: contents;
 }
 
-/* 上部の要素は横幅いっぱいに表示 */
+/* 画面上部にある空の要素による余白をなくす */
+#question-text:empty {
+    display: none;
+}
+
+/* 問題画面全体 */
+#problem-screen.split-layout {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 45%) minmax(0, 55%);
+
+    grid-template-rows:
+        auto auto auto auto minmax(0, 1fr);
+
+    column-gap: 16px;
+    row-gap: 4px;
+
+    width: min(98vw, 1200px);
+    height: calc(100dvh - 20px);
+    min-height: 0;
+
+    margin: 0 auto;
+    padding: 0 4px;
+
+    box-sizing: border-box;
+    align-content: stretch;
+}
+
+/* 上部：ナビゲーション・問題番号・問題文 */
 #problem-screen.split-layout > .nav-buttons,
 #problem-screen.split-layout > #unit-name,
 #problem-screen.split-layout > .problem-header,
 #problem-screen.split-layout > .problem-content {
     grid-column: 1 / -1;
-}
-
-/* ナビゲーション */
-#problem-screen.split-layout .nav-buttons {
+    min-width: 0;
+    margin-top: 0;
     margin-bottom: 0;
 }
 
+#problem-screen.split-layout .nav-buttons {
+    min-height: 38px;
+    padding: 0 4px;
+}
+
+#problem-screen.split-layout .nav-buttons .btn {
+    padding: 7px 12px;
+}
+
 #problem-screen.split-layout #unit-name {
-    font-size: 1.4rem;
+    font-size: 1.25rem;
+    line-height: 1.2;
     margin: 0;
 }
 
-/* 問題番号と難易度 */
 #problem-screen.split-layout .problem-header {
-    margin: 0 auto;
+    width: 100%;
+    padding: 0 8px;
+    box-sizing: border-box;
 }
 
 #problem-screen.split-layout .problem-title {
-    font-size: 1.35rem;
+    font-size: 1.15rem;
 }
 
 #problem-screen.split-layout .problem-stars {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
 }
 
-/* 問題文をコンパクトに */
 #problem-screen.split-layout .problem-content {
-    margin-top: 0;
-    padding: 8px 16px;
-
-    border-width: 2px;
-    border-radius: 12px;
+    padding: 7px 14px;
+    border: 2px solid #333;
+    border-radius: 10px;
 }
 
 #problem-screen.split-layout .problem-text {
     font-size: 1.2rem;
     line-height: 1.4;
-    margin-bottom: 0;
+    margin: 0;
 }
 
-/* 左側：アレイ図 */
+/* ==========================================
+   左側：アレイ図
+   ========================================== */
+
 #problem-screen.split-layout #options-section {
     grid-column: 1;
-    grid-row: 5 / span 3;
+    grid-row: 5;
 
-    align-self: start;
     min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 4px;
+
+    align-self: stretch;
+    overflow: visible;
 }
 
 #problem-screen.split-layout #options-section > hr {
@@ -1673,20 +1702,25 @@ button:disabled {
 }
 
 #problem-screen.split-layout #original-array-section > p {
+    margin: 2px 0 5px;
     font-size: 0.95rem;
-    margin: 4px 0;
+    line-height: 1.3;
 }
 
-/* アレイ図の説明 */
+#problem-screen.split-layout .split-array-wrapper {
+    width: 100%;
+    gap: 4px;
+}
+
 #problem-screen.split-layout .split-array-instruction {
+    margin: 0 0 5px;
     font-size: 0.85rem;
-    line-height: 1.35;
-    margin: 4px 0 8px;
+    line-height: 1.25;
 }
 
-/* 縦長のアレイ図を画面に収める */
+/* 図の幅を150pxから拡大 */
 #problem-screen.split-layout .split-array-area {
-    width: min(100%, 150px);
+    width: min(100%, 220px);
     margin: 0 auto;
 }
 
@@ -1694,100 +1728,207 @@ button:disabled {
     gap: 3px !important;
 }
 
+/*
+ * 正方形に固定せず、縦方向の余裕に応じて
+ * セルの高さを調整する。
+ *
+ * 12行・13行・15行の問題を想定。
+ */
 #problem-screen.split-layout .split-array-cell {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: auto !important;
+    height: clamp(22px, 4.3dvh, 40px);
+    min-height: 0;
+    touch-action: manipulation;
 }
 
-/* 右側：計算式 */
-#problem-screen.split-layout #formula-section-container {
+/* ==========================================
+   右側：計算式・答え合わせ・テンキー
+   ========================================== */
+
+#problem-screen.split-layout > .split-answer-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+
     grid-column: 2;
     grid-row: 5;
 
-    align-self: start;
+    min-width: 0;
+    min-height: 0;
+
+    gap: 7px;
+    padding: 4px 8px;
+    box-sizing: border-box;
+}
+
+/* 計算式が表示されるまでの余白をなくす */
+#problem-screen.split-layout #formula-section-container {
+    flex: 0 0 auto;
     min-width: 0;
 
     margin: 0;
-    padding: 10px 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
 }
 
-/* 計算式の説明 */
 #problem-screen.split-layout #formula-instruction {
-    font-size: 1rem;
-    line-height: 1.35;
-    margin: 0 0 10px;
+    margin: 0 0 8px;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    text-align: left;
 }
 
 #problem-screen.split-layout #formula-instruction > div {
-    margin-top: 5px !important;
-    line-height: 1.4 !important;
+    margin-top: 4px !important;
+    line-height: 1.3 !important;
 }
 
-/* 計算式の入力欄 */
 #problem-screen.split-layout .formula-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     gap: 5px;
-    margin-bottom: 9px;
+    margin-bottom: 8px;
+    flex-wrap: nowrap;
+
+    font-size: 1.15rem;
 }
 
 #problem-screen.split-layout .formula-input {
-    width: clamp(34px, 4vw, 55px);
+    width: clamp(34px, 4.5vw, 56px);
     height: 42px;
-    font-size: 1.25rem;
-    margin: 1px;
+    margin: 0;
+    padding: 0;
+
+    font-size: 1.2rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
-/* 答え合わせボタンを右側に配置 */
-#problem-screen.split-layout > button[onclick="checkAnswer()"] {
-    grid-column: 2;
-    grid-row: 6;
+/* 答え合わせボタンは式の直後に配置 */
+#problem-screen.split-layout
+.split-answer-panel > button[onclick="checkAnswer()"] {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    padding: 8px 12px;
 
-    align-self: start;
-    padding: 10px;
-    font-size: 1.2rem !important;
+    font-size: 1.15rem !important;
 }
 
-/* 判定結果・ヒントを右側に配置 */
-#problem-screen.split-layout > .answer-feedback {
-    grid-column: 2;
-    grid-row: 7;
+/* 判定結果 */
+#problem-screen.split-layout .answer-feedback {
+    flex: 0 0 auto;
+    min-height: 0;
 
-    margin-top: 4px !important;
+    margin-top: 0 !important;
+    gap: 8px !important;
     flex-wrap: wrap;
 }
 
-/* テンキー・ヒントウィンドウ */
-#problem-screen.split-layout #custom-keypad,
-#problem-screen.split-layout #hint-modal {
-    grid-column: 1 / -1;
+#problem-screen.split-layout #feedback-message,
+#problem-screen.split-layout #result-message {
+    font-size: 1.1rem !important;
 }
 
-/* 画面幅が小さい場合 */
-@media (max-width: 650px) {
+/* ==========================================
+   テンキー：右側パネルの下に表示
+   ========================================== */
 
+#problem-screen.split-layout #custom-keypad {
+    position: static;
+    left: auto;
+    bottom: auto;
+    transform: none;
+
+    flex: 0 0 auto;
+
+    width: 100%;
+    max-width: none;
+    height: clamp(155px, 25dvh, 200px);
+
+    padding: 5px;
+    border: 2px solid #d0d0d0;
+    border-radius: 10px;
+
+    box-sizing: border-box;
+}
+
+#problem-screen.split-layout .keypad-grid {
+    gap: 4px;
+}
+
+#problem-screen.split-layout .key-btn {
+    font-size: 1.15rem;
+    border-radius: 6px;
+}
+
+/* 従来の500pxの余白を追加しない */
+#problem-screen.split-layout.keypad-open {
+    padding-bottom: 0 !important;
+}
+
+/* ==========================================
+   高さが小さい横向きタブレット
+   ========================================== */
+
+@media (max-height: 650px) and (orientation: landscape) {
     #problem-screen.split-layout {
-        width: 98vw;
-        column-gap: 6px;
+        row-gap: 2px;
+    }
+
+    #problem-screen.split-layout #unit-name {
+        font-size: 1.05rem;
     }
 
     #problem-screen.split-layout .problem-content {
-        padding: 6px 10px;
+        padding: 4px 10px;
+    }
+
+    #problem-screen.split-layout .problem-text {
+        font-size: 1.05rem;
+    }
+
+    #problem-screen.split-layout .split-array-cell {
+        height: clamp(18px, 4dvh, 30px);
     }
 
     #problem-screen.split-layout .formula-input {
-        width: 32px;
-        height: 36px;
+        height: 34px;
         font-size: 1rem;
-        border-width: 2px;
+    }
+
+    #problem-screen.split-layout .formula-row {
+        margin-bottom: 4px;
+    }
+
+    #problem-screen.split-layout #custom-keypad {
+        height: 150px;
+    }
+}
+
+/* 横幅が狭い端末への最低限の対応 */
+@media (max-width: 650px) {
+    #problem-screen.split-layout {
+        grid-template-columns:
+            minmax(0, 43%) minmax(0, 57%);
+        column-gap: 6px;
+    }
+
+    #problem-screen.split-layout .split-array-area {
+        width: min(100%, 170px);
+    }
+
+    #problem-screen.split-layout .formula-input {
+        width: 30px;
+        height: 34px;
+        font-size: 0.95rem;
     }
 
     #problem-screen.split-layout .formula-row {
         gap: 2px;
-    }
-
-    #problem-screen.split-layout #formula-instruction {
-        font-size: 0.85rem;
-    }
-
-    #problem-screen.split-layout .split-array-area {
-        width: min(100%, 110px);
     }
 }

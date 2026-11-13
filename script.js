@@ -154,7 +154,7 @@ const unitData = [
                 style: "split-multiplication",
                 originalColumns: 14,
                 originalRows: 3,
-                maxParts: 3
+                maxParts: 2
             },
             {
                 type: "problem",
@@ -163,7 +163,7 @@ const unitData = [
                 style: "split-multiplication",
                 originalColumns: 15,
                 originalRows: 2,
-                maxParts: 4
+                maxParts: 2
             }
         ]
     },
@@ -267,7 +267,8 @@ const unitData = [
             document.getElementById('display-main-title').innerText = data.title;
         } else {
             document.getElementById('cover-screen').style.display = "none";
-            document.getElementById('problem-screen').style.display = "block";
+            document.getElementById('problem-screen').style.display =
+            data.style === "split-multiplication" ? "grid" : "block";
             document.getElementById('screen-menu').style.display = "none";
             const problemNo = currentProblem + 1;
             document.getElementById('page-info').innerText = `${currentProblem+1} / ${unit.problems.length}`;
@@ -1515,7 +1516,10 @@ function closeHintFromBackground(event) {
         problemScreen.classList.add('keypad-open');
         inputEl.focus();
 
-        if (!isGridTable) {
+        if (
+            !isGridTable &&
+            getCurrentProblem().style !== "split-multiplication"
+        ) {
             setTimeout(() => {
                 const inputRect = inputEl.getBoundingClientRect();
                 const keypadRect = keypad.getBoundingClientRect();
