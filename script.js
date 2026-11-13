@@ -502,104 +502,145 @@ function createOriginalArray(columns, rows) {
         }
     }
 
-    function renderLines() {
-        lineLayer.replaceChildren();
+    
+    
+function renderLines() {
+    lineLayer.replaceChildren();
 
-        if (splitPosition === null) return;
+    if (splitPosition === null) return;
 
-        const firstCell = cells[0];
-        const targetCell = cells[splitPosition * rows];
+    const getBoundaryY = position => {
+        const targetCell = cells[position * rows];
+        if (!targetCell) return null;
 
-        if (!firstCell || !targetCell) return;
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = targetCell.getBoundingClientRect();
 
-        const containerRect =
-            container.getBoundingClientRect();
-        const targetRect =
-            targetCell.getBoundingClientRect();
+        return targetRect.top - containerRect.top - 2;
+    };
 
-        // 分割する行の境界
-        const boundaryY =
-            targetRect.top - containerRect.top - 2;
+    const boundaryY = getBoundaryY(splitPosition);
+    if (boundaryY === null) return;
 
-        const line = document.createElement("div");
+    const line = document.createElement("div");
 
-        line.style.position = "absolute";
-        line.style.left = "0";
-        line.style.top = `${boundaryY - 12}px`;
-        line.style.width = "100%";
-        line.style.height = "24px";
-        line.style.cursor = "ns-resize";
-        line.style.touchAction = "none";
-        line.style.pointerEvents = "auto";
-        line.style.zIndex = "10";
+    line.style.position = "absolute";
+    line.style.left = "0";
+    line.style.top = `${boundaryY - 12}px`;
+    line.style.width = "100%";
+    line.style.height = "24px";
+    line.style.cursor = "ns-resize";
+    line.style.touchAction = "none";
+    line.style.pointerEvents = "auto";
+    line.style.zIndex = "10";
+    line.style.willChange = "transform";
 
-        const visualLine = document.createElement("div");
+    const visualLine = document.createElement("div");
 
-        visualLine.style.position = "absolute";
-        visualLine.style.left = "0";
-        visualLine.style.top = "10px";
-        visualLine.style.width = "100%";
-        visualLine.style.height = "4px";
-        visualLine.style.backgroundColor = "#e17b39";
-        visualLine.style.borderRadius = "3px";
-        visualLine.style.pointerEvents = "none";
+    visualLine.style.position = "absolute";
+    visualLine.style.left = "0";
+    visualLine.style.top = "10px";
+    visualLine.style.width = "100%";
+    visualLine.style.height = "4px";
+    visualLine.style.backgroundColor = "#e17b39";
+    visualLine.style.borderRadius = "3px";
+    visualLine.style.pointerEvents = "none";
 
-        line.appendChild(visualLine);
+    line.appendChild(visualLine);
 
-        let startY = 0;
-        let dragging = false;
+    let startY = 0;
+    let dragging = false;
+    let activePointerId = null;
+    let currentOffset = 0;
 
-        line.addEventListener("pointerdown", event => {
-            if (splitSolved) return;
-            if (event.button !== 0) return;
+    // ドラッグ可能な範囲を、最初と最後の境界に制限
+    const firstBoundary = getBoundaryY(1);
+    const lastBoundary = getBoundaryY(columns - 1);
 
-            event.preventDefault();
-            event.stopPropagation();
+    line.addEventListener("pointerdown", event => {
+        if (splitSolved) return;
+        if (event.button !== 0) return;
 
-            startY = event.clientY;
-            dragging = true;
-            line.setPointerCapture(event.pointerId);
-        });
+        event.preventDefault();
+        event.stopPropagation();
 
-        line.addEventListener("pointerup", event => {
-            if (!dragging) return;
+        startY = event.clientY;
+        currentOffset = 0;
+        dragging = true;
+        activePointerId = event.pointerId;
 
-            event.preventDefault();
-            event.stopPropagation();
-            dragging = false;
+        line.setPointerCapture(event.pointerId);
+    });
 
-            const distance = event.clientY - startY;
+    // ドラッグ中は指の動きに合わせて連続移動
+    line.addEventListener("pointermove", event => {
+        if (!dragging || event.pointerId !== activePointerId) {
+            return;
+        }
 
-            // 分割線を上下にドラッグして位置を変更
-            const cellHeight =
-                firstCell.getBoundingClientRect().height + 4;
+        event.preventDefault();
 
-            const moveCount =
-                Math.round(distance / cellHeight);
+        const distance = event.clientY - startY;
 
-            const newPosition = Math.max(
-                1,
-                Math.min(
-                    columns - 1,
-                    splitPosition + moveCount
-                )
-            );
+        const minOffset = firstBoundary - boundaryY;
+        const maxOffset = lastBoundary - boundaryY;
 
-            if (newPosition !== splitPosition) {
-                splitPosition = newPosition;
-                updateArray();
-            } else {
-                renderLines();
+        currentOffset = Math.max(
+            minOffset,
+            Math.min(maxOffset, distance)
+        );
+
+        line.style.transform =
+            `translateY(${currentOffset}px)`;
+    });
+
+    line.addEventListener("pointerup", event => {
+        if (!dragging || event.pointerId !== activePointerId) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        dragging = false;
+        activePointerId = null;
+
+        // 指を離した位置に最も近い境界を探す
+        const finalY = boundaryY + currentOffset;
+
+        let nearestPosition = splitPosition;
+        let nearestDistance = Infinity;
+
+        for (let position = 1; position < columns; position++) {
+            const candidateY = getBoundaryY(position);
+            if (candidateY === null) continue;
+
+            const distance = Math.abs(candidateY - finalY);
+
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestPosition = position;
             }
-        });
+        }
 
-        line.addEventListener("pointercancel", () => {
-            dragging = false;
+        if (nearestPosition !== splitPosition) {
+            splitPosition = nearestPosition;
+            updateArray();
+        } else {
             renderLines();
-        });
+        }
+    });
 
-        lineLayer.appendChild(line);
-    }
+    line.addEventListener("pointercancel", () => {
+        dragging = false;
+        activePointerId = null;
+        renderLines();
+    });
+
+    lineLayer.appendChild(line);
+}
+
+
 
     gridArea.appendChild(container);
     gridArea.appendChild(lineLayer);
@@ -1681,7 +1722,7 @@ function createSplitReflectionVisual(data) {
 
     // 問題画面と同じく、縦に12行・横に3列
     array.style.gridTemplateColumns =
-        `repeat(${rows}, minmax(0, 1fr))`;
+        `repeat(${rows}, var(--reflection-cell-width))`;
 
     // 各列がどの部分に属するかを計算
     const boundaries = [];

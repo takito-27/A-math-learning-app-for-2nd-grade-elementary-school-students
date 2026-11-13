@@ -1595,10 +1595,21 @@ button:disabled {
     gap: 3px;
 }
 
+.split-reflection-array {
+    --reflection-cell-height: clamp(16px, 3.2dvh, 28px);
+    --reflection-cell-width: calc(3 * var(--reflection-cell-height));
+
+    width: max-content;
+    max-width: 100%;
+    gap: 3px;
+    margin: 12px auto;
+}
+
 .split-reflection-array .split-reflection-cell {
-    width: calc(3 * var(--reflection-cell-height));
+    width: var(--reflection-cell-width);
     height: var(--reflection-cell-height);
     aspect-ratio: 3 / 1;
+    box-sizing: border-box;
 }
 
 /* ==========================================
