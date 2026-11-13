@@ -1596,9 +1596,9 @@ button:disabled {
 }
 
 .split-reflection-array .split-reflection-cell {
-    width: 48px;
-    height: 24px;
-    aspect-ratio: auto;
+    width: calc(3 * var(--reflection-cell-height));
+    height: var(--reflection-cell-height);
+    aspect-ratio: 3 / 1;
 }
 
 /* ==========================================
@@ -1985,10 +1985,10 @@ button:disabled {
 }
 
 .split-reflection-cell {
-    width: calc(2 * var(--reflection-cell-height));
+    width: calc(3 * var(--reflection-cell-height));
     height: var(--reflection-cell-height);
 
-    aspect-ratio: 2 / 1;
+    aspect-ratio: 3 / 1;
     box-sizing: border-box;
 
     border: 1px solid #3989b7;
@@ -1999,4 +1999,8 @@ button:disabled {
 .split-reflection-boundary {
     border-left: 1px solid #3989b7;
     border-top: 4px solid #e17b39;
+}
+
+.split-reflection-array {
+    --reflection-cell-height: clamp(16px, 3.2dvh, 28px);
 }
