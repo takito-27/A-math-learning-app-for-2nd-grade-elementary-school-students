@@ -357,119 +357,100 @@ const unitData = [
     
     
    
+
 function createOriginalArray(columns, rows) {
     const wrapper = document.createElement("div");
     const gridArea = document.createElement("div");
     const container = document.createElement("div");
 
-    wrapper.style.width = "100%";
+    wrapper.className = "split-array-wrapper";
+    gridArea.className = "split-array-area";
+    container.className = "split-array-grid";
+
+    // 計算上の columns を縦方向に並べる
+    // 例：12×3 → 縦12行、横3列
+    container.style.display = "grid";
+    container.style.gridTemplateColumns =
+        `repeat(${rows}, minmax(0, 1fr))`;
+    container.style.gap = "4px";
 
     gridArea.style.position = "relative";
-    gridArea.style.width = "100%";
-    gridArea.style.maxWidth = "650px";
-    gridArea.style.margin = "20px auto";
 
-    container.style.display = "grid";
-    container.style.width = "100%";
-    container.style.boxSizing = "border-box";
-    container.style.gridTemplateColumns =
-        `repeat(${columns}, minmax(0, 1fr))`;
-    container.style.gap = "5px";
-
-    const data = getCurrentProblem();
-
-    const colors = [
-        "#79c7ec", "#a6d974", "#f7c879",
-        "#c5a8eb", "#f3a6b4", "#9bd9c3"
-    ];
-
+    const colors = ["#79c7ec", "#a6d974"];
     const cells = [];
-    let splitPositions = [];
-
-    // 前回の分割位置を記録する
+    let splitPosition = null;
     let previousSplitKey = "[]";
 
     container.dataset.splitPositions = "[]";
     container.dataset.splitPosition = "";
 
     const instruction = document.createElement("p");
-    instruction.style.textAlign = "center";
-    instruction.style.fontSize = "14px";
-
-    const resetButton = document.createElement("button");
-    resetButton.type = "button";
-    resetButton.textContent = "分け方をやり直す";
-    resetButton.style.display = "block";
-    resetButton.style.margin = "10px auto";
-    resetButton.style.padding = "10px 18px";
+    instruction.className = "split-array-instruction";
+    instruction.textContent =
+        "図をタップして、2つに分けましょう。";
 
     const lineLayer = document.createElement("div");
     lineLayer.style.position = "absolute";
     lineLayer.style.inset = "0";
     lineLayer.style.pointerEvents = "none";
 
-    for (let i = 0; i < columns * rows; i++) {
-        const cell = document.createElement("div");
+    // 縦 columns 行、横 rows 列のアレイ図
+    for (let row = 0; row < columns; row++) {
+        for (let col = 0; col < rows; col++) {
+            const cell = document.createElement("div");
 
-        cell.style.width = "100%";
-        cell.style.aspectRatio = "1 / 1";
-        cell.style.boxSizing = "border-box";
-        cell.style.border = "1px solid #3989b7";
-        cell.style.borderRadius = "4px";
-        cell.style.backgroundColor = colors[0];
-        cell.style.cursor = "pointer";
+            cell.className = "split-array-cell";
+            cell.style.aspectRatio = "1 / 1";
+            cell.style.boxSizing = "border-box";
+            cell.style.border = "1px solid #3989b7";
+            cell.style.borderRadius = "4px";
+            cell.style.backgroundColor = colors[0];
+            cell.style.cursor = "pointer";
 
-        const position = (i % columns) + 1;
+            // タップした行の下側に分割線を置く
+            const position = row + 1;
 
-        cell.addEventListener("click", () => {
-            if (position >= columns) return;
+            cell.addEventListener("click", () => {
+                if (splitSolved) return;
+                if (position >= columns) return;
 
-            // 既存の区切りをクリックしたら削除
-            if (splitPositions.includes(position)) {
-                splitPositions = splitPositions.filter(
-                    value => value !== position
-                );
-            } else {
-                splitPositions.push(position);
-            }
+                // 何度押しても分割位置は1か所だけ
+                if (splitPosition === position) return;
 
-            updateArray();
-        });
+                splitPosition = position;
+                updateArray();
+            });
 
-        container.appendChild(cell);
-        cells.push(cell);
+            container.appendChild(cell);
+            cells.push(cell);
+        }
     }
 
-    
     function updateArray() {
-        splitPositions.sort((a, b) => a - b);
+        const positions =
+            splitPosition === null ? [] : [splitPosition];
 
-        // 現在の分割位置を記録
-        const currentSplitKey = JSON.stringify(splitPositions);
+        const currentSplitKey = JSON.stringify(positions);
 
-        // 前回から分割位置が変わった場合のみ処理
         if (currentSplitKey !== previousSplitKey) {
-
-            // 次の答え合わせではヒントを最初から表示
             hintStep = 0;
-
-            // 前回の間違いの種類を引き継がない
             hintErrorType = null;
 
-            // 前回のヒントボタンを非表示にする
-            const hintButton = document.getElementById("hint-btn");
+            const hintButton =
+                document.getElementById("hint-btn");
             if (hintButton) {
                 hintButton.style.display = "none";
             }
 
-            // 以前のヒント内容をクリア
-            const hintDisplay = document.getElementById("hint-display");
+            const hintDisplay =
+                document.getElementById("hint-display");
             if (hintDisplay) {
                 hintDisplay.replaceChildren();
             }
 
-            // 開いているヒントウィンドウがあれば閉じる
-            const hintModal = document.getElementById("hint-modal");
+            const hintModal =
+                document.getElementById("hint-modal");
+
             if (
                 hintModal &&
                 hintModal.getAttribute("aria-hidden") === "false"
@@ -477,132 +458,98 @@ function createOriginalArray(columns, rows) {
                 closeHint();
             }
 
-            // 新しい分割位置を保存
             previousSplitKey = currentSplitKey;
         }
 
+        // 既存の計算・ヒント処理との互換性を維持
         container.dataset.splitPositions = currentSplitKey;
-
-
         container.dataset.splitPosition =
-            splitPositions.length === 1
-                ? String(splitPositions[0])
-                : "";
+            splitPosition === null ? "" : String(splitPosition);
 
         cells.forEach((cell, index) => {
-            const column = index % columns;
-
-            const groupIndex = splitPositions.filter(
-                position => column >= position
-            ).length;
+            const row = Math.floor(index / rows);
 
             cell.style.backgroundColor =
-                colors[groupIndex % colors.length];
+                splitPosition !== null && row >= splitPosition
+                    ? colors[1]
+                    : colors[0];
         });
 
         renderLines();
 
-        const partCount = splitPositions.length + 1;
-
+        // 未分割なら入力欄なし、分割後は2つ分
         updateSplitFormula(
-            splitPositions.length > 0 ? partCount : 0
+            splitPosition === null ? 0 : 2
         );
 
-        instruction.textContent =
-            `現在は${partCount}つに分かれています。` +
-            (data.suggestedMaxParts
-                ? ` ${data.suggestedMaxParts}つまでに分けて考えてみよう。`
-                : "");
+        if (splitPosition === null) {
+            instruction.textContent =
+                "図をタップして、2つに分けましょう。";
+        } else {
+            instruction.textContent =
+                `${columns}を ${splitPosition}と` +
+                `${columns - splitPosition}に分けました。` +
+                " ほかの場所を押すと分け方を変えられます。";
+        }
     }
 
-    
-function renderLines() {
-    lineLayer.innerHTML = "";
+    function renderLines() {
+        lineLayer.replaceChildren();
 
-    const gridWidth = container.clientWidth;
-    const gap = 5;
-    const cellWidth =
-        (gridWidth - gap * (columns - 1)) / columns;
-    const step = cellWidth + gap;
+        if (splitPosition === null) return;
 
-    // 列の境界位置を取得
-    function getBoundaryX(position) {
-        return position * cellWidth +
-            (position - 0.5) * gap;
-    }
+        const firstCell = cells[0];
+        const targetCell = cells[splitPosition * rows];
 
-    splitPositions.forEach(position => {
+        if (!firstCell || !targetCell) return;
+
+        const containerRect =
+            container.getBoundingClientRect();
+        const targetRect =
+            targetCell.getBoundingClientRect();
+
+        // 分割する行の境界
+        const boundaryY =
+            targetRect.top - containerRect.top - 2;
+
         const line = document.createElement("div");
 
-        const initialX = getBoundaryX(position);
-
         line.style.position = "absolute";
-        line.style.left = `${initialX}px`;
-        line.style.top = "0";
-        line.style.height = "100%";
-        line.style.width = "24px";
-        line.style.transform = "translateX(-50%)";
-        line.style.cursor = "ew-resize";
+        line.style.left = "0";
+        line.style.top = `${boundaryY - 12}px`;
+        line.style.width = "100%";
+        line.style.height = "24px";
+        line.style.cursor = "ns-resize";
         line.style.touchAction = "none";
         line.style.pointerEvents = "auto";
         line.style.zIndex = "10";
-        line.style.willChange = "transform";
 
         const visualLine = document.createElement("div");
 
         visualLine.style.position = "absolute";
-        visualLine.style.left = "50%";
-        visualLine.style.top = "0";
-        visualLine.style.height = "100%";
-        visualLine.style.width = "4px";
-        visualLine.style.transform = "translateX(-50%)";
+        visualLine.style.left = "0";
+        visualLine.style.top = "10px";
+        visualLine.style.width = "100%";
+        visualLine.style.height = "4px";
         visualLine.style.backgroundColor = "#e17b39";
         visualLine.style.borderRadius = "3px";
         visualLine.style.pointerEvents = "none";
 
         line.appendChild(visualLine);
 
-        let startX = 0;
-        let currentX = 0;
+        let startY = 0;
         let dragging = false;
-        let moved = false;
-        let frameId = null;
-
-        function drawPosition() {
-            line.style.transform =
-                `translateX(calc(-50% + ${currentX}px))`;
-            frameId = null;
-        }
 
         line.addEventListener("pointerdown", event => {
+            if (splitSolved) return;
             if (event.button !== 0) return;
 
             event.preventDefault();
             event.stopPropagation();
 
-            startX = event.clientX;
-            currentX = 0;
+            startY = event.clientY;
             dragging = true;
-            moved = false;
-
             line.setPointerCapture(event.pointerId);
-        });
-
-        line.addEventListener("pointermove", event => {
-            if (!dragging) return;
-
-            const distance = event.clientX - startX;
-
-            if (Math.abs(distance) > 3) {
-                moved = true;
-            }
-
-            // ドラッグ中は分割線だけを移動
-            currentX = distance;
-
-            if (frameId === null) {
-                frameId = requestAnimationFrame(drawPosition);
-            }
         });
 
         line.addEventListener("pointerup", event => {
@@ -610,71 +557,47 @@ function renderLines() {
 
             event.preventDefault();
             event.stopPropagation();
-
             dragging = false;
 
-            if (frameId !== null) {
-                cancelAnimationFrame(frameId);
-                frameId = null;
-            }
+            const distance = event.clientY - startY;
 
-            const distance = event.clientX - startX;
+            // 分割線を上下にドラッグして位置を変更
+            const cellHeight =
+                firstCell.getBoundingClientRect().height + 4;
 
-            if (!moved && Math.abs(distance) <= 3) {
-                // クリックした場合は削除
-                splitPositions = splitPositions.filter(
-                    value => value !== position
-                );
+            const moveCount =
+                Math.round(distance / cellHeight);
+
+            const newPosition = Math.max(
+                1,
+                Math.min(
+                    columns - 1,
+                    splitPosition + moveCount
+                )
+            );
+
+            if (newPosition !== splitPosition) {
+                splitPosition = newPosition;
+                updateArray();
             } else {
-                // ドラッグ終了時に最も近い列境界へ吸着
-                const moveCount = Math.round(distance / step);
-                const newPosition = position + moveCount;
-
-                if (
-                    newPosition > 0 &&
-                    newPosition < columns &&
-                    !splitPositions.includes(newPosition)
-                ) {
-                    splitPositions = splitPositions.map(
-                        value => value === position
-                            ? newPosition
-                            : value
-                    );
-                }
+                renderLines();
             }
-
-            updateArray();
         });
 
         line.addEventListener("pointercancel", () => {
             dragging = false;
-
-            if (frameId !== null) {
-                cancelAnimationFrame(frameId);
-                frameId = null;
-            }
-
             renderLines();
         });
 
         lineLayer.appendChild(line);
-    });
-}
-
-
-    resetButton.addEventListener("click", () => {
-        splitPositions = [];
-        updateArray();
-    });
+    }
 
     gridArea.appendChild(container);
     gridArea.appendChild(lineLayer);
 
     wrapper.appendChild(instruction);
     wrapper.appendChild(gridArea);
-    wrapper.appendChild(resetButton);
 
-    // 画面幅が変わった場合にも区切り線を再配置
     const resizeObserver = new ResizeObserver(() => {
         renderLines();
     });
@@ -685,6 +608,7 @@ function renderLines() {
 
     return wrapper;
 }
+
 
 
     
@@ -773,6 +697,7 @@ function updateSplitFormula(partCount) {
 }
 
 
+
 function getSplitHintInfo(data) {
     const array = document.querySelector(
         "#original-array [data-split-positions]"
@@ -788,45 +713,33 @@ function getSplitHintInfo(data) {
         return null;
     }
 
-    if (!Array.isArray(positions) || positions.length === 0) {
+    // 分割は必ず1回だけ
+    if (!Array.isArray(positions) || positions.length !== 1) {
         return null;
     }
 
     const columns = Number(data.originalColumns);
     const rows = Number(data.originalRows);
+    const position = positions[0];
 
     if (
         !Number.isInteger(columns) ||
         !Number.isInteger(rows) ||
         columns < 2 ||
-        rows < 1
+        rows < 1 ||
+        !Number.isInteger(position) ||
+        position <= 0 ||
+        position >= columns
     ) {
         return null;
     }
 
-    // 分割位置を小さい順に並べる
-    const sortedPositions = [...positions].sort((a, b) => a - b);
-
-    // 不正な分割位置がないか確認
-    if (
-        sortedPositions.some(
-            (position, index) =>
-                !Number.isInteger(position) ||
-                position <= 0 ||
-                position >= columns ||
-                (index > 0 && position === sortedPositions[index - 1])
-        )
-    ) {
-        return null;
-    }
-
-    // 各部分の横の数を求める
-    const boundaries = [0, ...sortedPositions, columns];
-    const widths = [];
-
-    for (let i = 0; i < boundaries.length - 1; i++) {
-        widths.push(boundaries[i + 1] - boundaries[i]);
-    }
+    // 上下に分けた数
+    // 既存の処理に合わせて widths という名前を維持
+    const widths = [
+        position,
+        columns - position
+    ];
 
     return {
         widths,
@@ -834,6 +747,7 @@ function getSplitHintInfo(data) {
         columns
     };
 }
+
 
 
 
@@ -1752,7 +1666,7 @@ function createSplitReflectionVisual(data) {
     array.className = "split-reflection-array";
 
     array.style.gridTemplateColumns =
-        `repeat(${columns}, minmax(0, 1fr))`;
+        `repeat(${rows}, minmax(0, 1fr))`;
 
     // 各列がどの部分に属するかを計算
     const boundaries = [];
@@ -1763,32 +1677,33 @@ function createSplitReflectionVisual(data) {
         boundaries.push(totalWidth);
     });
 
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < columns; col++) {
+    
+for (let row = 0; row < columns; row++) {
+    for (let col = 0; col < rows; col++) {
 
-            const cell = document.createElement("div");
-            cell.className = "split-reflection-cell";
+        const cell = document.createElement("div");
+        cell.className = "split-reflection-cell";
 
-            const groupIndex = boundaries.findIndex(
-                boundary => col < boundary
-            );
+        // 上下方向の分割位置で色分け
+        const groupIndex = boundaries.findIndex(
+            boundary => row < boundary
+        );
 
-            cell.style.backgroundColor =
-                colors[groupIndex % colors.length];
+        cell.style.backgroundColor =
+            colors[groupIndex % colors.length];
 
-            // 分割位置を線で強調
-            if (
-                col > 0 &&
-                boundaries.slice(0, -1).includes(col)
-            ) {
-                cell.classList.add(
-                    "split-reflection-boundary"
-                );
-            }
-
-            array.appendChild(cell);
+        // 分割境界を横線として表示
+        if (
+            row > 0 &&
+            boundaries.slice(0, -1).includes(row)
+        ) {
+            cell.style.borderTop = "3px solid #e17b39";
         }
+
+        array.appendChild(cell);
     }
+}
+
 
     wrapper.appendChild(array);
 

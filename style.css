@@ -1552,3 +1552,38 @@ button:disabled {
         font-size: 19px;
     }
 }
+
+
+/* ========================================
+   かけ算のもんだい①：縦長アレイ図
+   ======================================== */
+
+.split-array-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.split-array-instruction {
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 5px 0 10px;
+}
+
+.split-array-area {
+    width: min(100%, 180px);
+    margin: 0 auto;
+}
+
+.split-array-grid {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 正解ポップアップの縦長アレイ図 */
+.split-reflection-array {
+    width: min(100%, 150px);
+    margin: 12px auto;
+}
