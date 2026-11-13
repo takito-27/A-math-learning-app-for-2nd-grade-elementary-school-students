@@ -256,7 +256,7 @@ const unitData = [
             "split-layout",
             data.style === "split-multiplication"
         );
-        
+
         document.getElementById("unit-name").innerText =unit.title;
         if (data.type === "cover") {
             document.getElementById('cover-screen').style.display = "block";
@@ -438,7 +438,8 @@ function createOriginalArray(columns, rows) {
 
         const currentSplitKey = JSON.stringify(positions);
 
-        if (currentSplitKey !== previousSplitKey) {
+        const splitChanged = currentSplitKey !== previousSplitKey;
+        if (splitChanged) {
             hintStep = 0;
             hintErrorType = null;
 
@@ -485,7 +486,8 @@ function createOriginalArray(columns, rows) {
 
         // 未分割なら入力欄なし、分割後は2つ分
         updateSplitFormula(
-            splitPosition === null ? 0 : 2
+            splitPosition === null ? 0 : 2,
+            splitChanged
         );
 
         if (splitPosition === null) {
@@ -619,7 +621,7 @@ function createOriginalArray(columns, rows) {
 
     
    
-function updateSplitFormula(partCount) {
+function updateSplitFormula(partCount, resetValues = false) {
     const formulaInputs = document.getElementById("formula-inputs");
     const formulaContainer = document.getElementById(
         "formula-section-container"
@@ -627,12 +629,14 @@ function updateSplitFormula(partCount) {
 
     if (!formulaInputs || !formulaContainer) return;
 
-    // 現在の入力内容を保存する
+   // 分割位置が変わっていない場合だけ入力内容を保存する
     const savedValues = {};
 
-    formulaInputs.querySelectorAll("input").forEach(input => {
-        savedValues[input.id] = input.value;
-    });
+    if (!resetValues) {
+        formulaInputs.querySelectorAll("input").forEach(input => {
+            savedValues[input.id] = input.value;
+        });
+    }
 
     if (partCount < 2) {
         formulaInputs.innerHTML = "";
