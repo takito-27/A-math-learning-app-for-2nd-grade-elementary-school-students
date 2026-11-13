@@ -1588,7 +1588,18 @@ button:disabled {
     margin: 12px auto;
 }
 
+.split-reflection-array {
+    width: max-content;
+    max-width: 100%;
+    margin: 12px auto;
+    gap: 3px;
+}
 
+.split-reflection-array .split-reflection-cell {
+    width: 48px;
+    height: 24px;
+    aspect-ratio: auto;
+}
 
 /* ==========================================
    かけ算のもんだい①：タブレット横向き
