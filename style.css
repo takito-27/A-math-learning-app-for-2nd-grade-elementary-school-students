@@ -1609,7 +1609,7 @@ button:disabled {
     display: grid;
 
     grid-template-columns:
-        minmax(0, 45%) minmax(0, 55%);
+        minmax(0, 44fr) minmax(0, 56fr);
 
     grid-template-rows:
         auto auto auto auto minmax(0, 1fr);
@@ -1725,7 +1725,10 @@ button:disabled {
 }
 
 #problem-screen.split-layout .split-array-grid {
+    width: max-content !important;
+    max-width: 100%;
     gap: 3px !important;
+    margin: 0 auto;
 }
 
 /*
@@ -1735,8 +1738,12 @@ button:disabled {
  * 12行・13行・15行の問題を想定。
  */
 #problem-screen.split-layout .split-array-cell {
-    aspect-ratio: auto !important;
-    height: clamp(22px, 4.3dvh, 40px);
+    width: clamp(24px, 4dvh, 36px) !important;
+    height: clamp(24px, 4dvh, 36px) !important;
+
+    aspect-ratio: 1 / 1 !important;
+    box-sizing: border-box;
+
     min-height: 0;
     touch-action: manipulation;
 }
