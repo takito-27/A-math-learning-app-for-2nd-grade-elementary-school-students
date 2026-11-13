@@ -1679,6 +1679,7 @@ function createSplitReflectionVisual(data) {
     const array = document.createElement("div");
     array.className = "split-reflection-array";
 
+    // 問題画面と同じく、縦に12行・横に3列
     array.style.gridTemplateColumns =
         `repeat(${rows}, minmax(0, 1fr))`;
 
@@ -1692,13 +1693,14 @@ function createSplitReflectionVisual(data) {
     });
 
     
+// 縦方向に「columns」行、横方向に「rows」列
 for (let row = 0; row < columns; row++) {
     for (let col = 0; col < rows; col++) {
 
         const cell = document.createElement("div");
         cell.className = "split-reflection-cell";
 
-        // 上下方向の分割位置で色分け
+        // 分割位置より上は青、下は緑
         const groupIndex = boundaries.findIndex(
             boundary => row < boundary
         );
@@ -1706,12 +1708,12 @@ for (let row = 0; row < columns; row++) {
         cell.style.backgroundColor =
             colors[groupIndex % colors.length];
 
-        // 分割境界を横線として表示
+        // 分割位置に横線を引く
         if (
             row > 0 &&
             boundaries.slice(0, -1).includes(row)
         ) {
-            cell.style.borderTop = "3px solid #e17b39";
+            cell.classList.add("split-reflection-boundary");
         }
 
         array.appendChild(cell);

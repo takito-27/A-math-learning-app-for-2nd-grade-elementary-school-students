@@ -1720,7 +1720,8 @@ button:disabled {
 
 /* 図の幅を150pxから拡大 */
 #problem-screen.split-layout .split-array-area {
-    width: min(100%, 220px);
+    width: max-content;
+    max-width: 100%;
     margin: 0 auto;
 }
 
@@ -1738,10 +1739,10 @@ button:disabled {
  * 12行・13行・15行の問題を想定。
  */
 #problem-screen.split-layout .split-array-cell {
-    width: clamp(24px, 4dvh, 36px) !important;
-    height: clamp(24px, 4dvh, 36px) !important;
+    width: calc(2 * var(--split-cell-height)) !important;
+    height: var(--split-cell-height) !important;
 
-    aspect-ratio: 1 / 1 !important;
+    aspect-ratio: 2 / 1 !important;
     box-sizing: border-box;
 
     min-height: 0;
@@ -1899,10 +1900,6 @@ button:disabled {
         font-size: 1.05rem;
     }
 
-    #problem-screen.split-layout .split-array-cell {
-        height: clamp(18px, 4dvh, 30px);
-    }
-
     #problem-screen.split-layout .formula-input {
         height: 34px;
         font-size: 1rem;
@@ -1938,4 +1935,57 @@ button:disabled {
     #problem-screen.split-layout .formula-row {
         gap: 2px;
     }
+}
+
+/* ==========================================
+   かけ算のもんだい①：Chromebook対応
+   ========================================== */
+
+/* 問題画面のセルサイズ */
+#problem-screen.split-layout {
+    --split-cell-height: clamp(
+        18px,
+        3.8dvh,
+        32px
+    );
+}
+
+/* 縦15行までのアレイ図を想定 */
+#problem-screen.split-layout .split-array-grid {
+    width: max-content !important;
+    max-width: 100%;
+    gap: 3px !important;
+    margin: 0 auto;
+}
+
+/* 正解後の解説画面 */
+.split-reflection-array {
+    --reflection-cell-height: clamp(
+        16px,
+        3.2dvh,
+        28px
+    );
+
+    display: grid;
+    width: max-content;
+    max-width: 100%;
+    gap: 3px;
+    margin: 8px auto;
+}
+
+.split-reflection-cell {
+    width: calc(2 * var(--reflection-cell-height));
+    height: var(--reflection-cell-height);
+
+    aspect-ratio: 2 / 1;
+    box-sizing: border-box;
+
+    border: 1px solid #3989b7;
+    border-radius: 4px;
+}
+
+/* 上下の分割線 */
+.split-reflection-boundary {
+    border-left: 1px solid #3989b7;
+    border-top: 4px solid #e17b39;
 }
