@@ -251,6 +251,12 @@ const unitData = [
         window.scrollTo(0, 0);
         const unit = getCurrentUnit();
         const data = getCurrentProblem();
+        // かけ算のもんだい①だけ専用レイアウトを使用する
+        document.getElementById("problem-screen").classList.toggle(
+            "split-layout",
+            data.style === "split-multiplication"
+        );
+        
         document.getElementById("unit-name").innerText =unit.title;
         if (data.type === "cover") {
             document.getElementById('cover-screen').style.display = "block";

@@ -1587,3 +1587,207 @@ button:disabled {
     width: min(100%, 150px);
     margin: 12px auto;
 }
+
+
+/* ==========================================
+   かけ算のもんだい①：研究授業用レイアウト
+   ========================================== */
+
+#problem-screen.split-layout {
+    display: grid !important;
+
+    /* 左：アレイ図 / 右：計算式 */
+    grid-template-columns:
+        minmax(0, 42%) minmax(0, 58%);
+
+    grid-template-rows:
+        auto auto auto auto auto auto auto;
+
+    column-gap: 16px;
+    row-gap: 5px;
+
+    align-content: start;
+
+    width: min(96vw, 1200px);
+    min-height: 0;
+    margin: 5px auto;
+}
+
+/* 上部の要素は横幅いっぱいに表示 */
+#problem-screen.split-layout > .nav-buttons,
+#problem-screen.split-layout > #unit-name,
+#problem-screen.split-layout > .problem-header,
+#problem-screen.split-layout > .problem-content {
+    grid-column: 1 / -1;
+}
+
+/* ナビゲーション */
+#problem-screen.split-layout .nav-buttons {
+    margin-bottom: 0;
+}
+
+#problem-screen.split-layout #unit-name {
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+/* 問題番号と難易度 */
+#problem-screen.split-layout .problem-header {
+    margin: 0 auto;
+}
+
+#problem-screen.split-layout .problem-title {
+    font-size: 1.35rem;
+}
+
+#problem-screen.split-layout .problem-stars {
+    font-size: 1.2rem;
+}
+
+/* 問題文をコンパクトに */
+#problem-screen.split-layout .problem-content {
+    margin-top: 0;
+    padding: 8px 16px;
+
+    border-width: 2px;
+    border-radius: 12px;
+}
+
+#problem-screen.split-layout .problem-text {
+    font-size: 1.2rem;
+    line-height: 1.4;
+    margin-bottom: 0;
+}
+
+/* 左側：アレイ図 */
+#problem-screen.split-layout #options-section {
+    grid-column: 1;
+    grid-row: 5 / span 3;
+
+    align-self: start;
+    min-width: 0;
+}
+
+#problem-screen.split-layout #options-section > hr {
+    display: none;
+}
+
+#problem-screen.split-layout #original-array-section > p {
+    font-size: 0.95rem;
+    margin: 4px 0;
+}
+
+/* アレイ図の説明 */
+#problem-screen.split-layout .split-array-instruction {
+    font-size: 0.85rem;
+    line-height: 1.35;
+    margin: 4px 0 8px;
+}
+
+/* 縦長のアレイ図を画面に収める */
+#problem-screen.split-layout .split-array-area {
+    width: min(100%, 150px);
+    margin: 0 auto;
+}
+
+#problem-screen.split-layout .split-array-grid {
+    gap: 3px !important;
+}
+
+#problem-screen.split-layout .split-array-cell {
+    aspect-ratio: 1 / 1;
+}
+
+/* 右側：計算式 */
+#problem-screen.split-layout #formula-section-container {
+    grid-column: 2;
+    grid-row: 5;
+
+    align-self: start;
+    min-width: 0;
+
+    margin: 0;
+    padding: 10px 8px;
+}
+
+/* 計算式の説明 */
+#problem-screen.split-layout #formula-instruction {
+    font-size: 1rem;
+    line-height: 1.35;
+    margin: 0 0 10px;
+}
+
+#problem-screen.split-layout #formula-instruction > div {
+    margin-top: 5px !important;
+    line-height: 1.4 !important;
+}
+
+/* 計算式の入力欄 */
+#problem-screen.split-layout .formula-row {
+    gap: 5px;
+    margin-bottom: 9px;
+}
+
+#problem-screen.split-layout .formula-input {
+    width: clamp(34px, 4vw, 55px);
+    height: 42px;
+    font-size: 1.25rem;
+    margin: 1px;
+}
+
+/* 答え合わせボタンを右側に配置 */
+#problem-screen.split-layout > button[onclick="checkAnswer()"] {
+    grid-column: 2;
+    grid-row: 6;
+
+    align-self: start;
+    padding: 10px;
+    font-size: 1.2rem !important;
+}
+
+/* 判定結果・ヒントを右側に配置 */
+#problem-screen.split-layout > .answer-feedback {
+    grid-column: 2;
+    grid-row: 7;
+
+    margin-top: 4px !important;
+    flex-wrap: wrap;
+}
+
+/* テンキー・ヒントウィンドウ */
+#problem-screen.split-layout #custom-keypad,
+#problem-screen.split-layout #hint-modal {
+    grid-column: 1 / -1;
+}
+
+/* 画面幅が小さい場合 */
+@media (max-width: 650px) {
+
+    #problem-screen.split-layout {
+        width: 98vw;
+        column-gap: 6px;
+    }
+
+    #problem-screen.split-layout .problem-content {
+        padding: 6px 10px;
+    }
+
+    #problem-screen.split-layout .formula-input {
+        width: 32px;
+        height: 36px;
+        font-size: 1rem;
+        border-width: 2px;
+    }
+
+    #problem-screen.split-layout .formula-row {
+        gap: 2px;
+    }
+
+    #problem-screen.split-layout #formula-instruction {
+        font-size: 0.85rem;
+    }
+
+    #problem-screen.split-layout .split-array-area {
+        width: min(100%, 110px);
+    }
+}
