@@ -1750,10 +1750,10 @@ button:disabled {
  * 12行・13行・15行の問題を想定。
  */
 #problem-screen.split-layout .split-array-cell {
-    width: calc(2 * var(--split-cell-height)) !important;
+    width: calc(3 * var(--split-cell-height)) !important;
     height: var(--split-cell-height) !important;
 
-    aspect-ratio: 2 / 1 !important;
+    aspect-ratio: 3 / 1 !important;
     box-sizing: border-box;
 
     min-height: 0;
