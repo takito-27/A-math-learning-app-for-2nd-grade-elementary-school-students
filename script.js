@@ -1749,18 +1749,32 @@ for (let row = 0; row < columns; row++) {
         cell.style.backgroundColor =
             colors[groupIndex % colors.length];
 
-        // 分割位置に横線を引く
-        if (
-            row > 0 &&
-            boundaries.slice(0, -1).includes(row)
-        ) {
-            cell.classList.add("split-reflection-boundary");
-        }
-
         array.appendChild(cell);
     }
 }
 
+// 分割位置に、図全体を横切る1本の線を描く
+const splitPosition = boundaries[0];
+
+if (
+    widths.length === 2 &&
+    splitPosition > 0 &&
+    splitPosition < columns
+) {
+    const splitLine = document.createElement("div");
+    splitLine.className = "split-reflection-line";
+
+    // 描画後に境界の位置を取得
+    requestAnimationFrame(() => {
+        const firstCellBelow = array.children[splitPosition * rows];
+
+        if (!firstCellBelow) return;
+
+        splitLine.style.top = `${firstCellBelow.offsetTop - 2}px`;
+    });
+
+    array.appendChild(splitLine);
+}
 
     wrapper.appendChild(array);
 

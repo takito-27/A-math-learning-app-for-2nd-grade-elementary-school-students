@@ -1971,17 +1971,36 @@ button:disabled {
 
 /* 正解後の解説画面 */
 .split-reflection-array {
-    --reflection-cell-height: clamp(
-        16px,
-        3.2dvh,
-        28px
-    );
+    --reflection-cell-height: clamp(16px, 3.2dvh, 28px);
+    --reflection-cell-width: calc(3 * var(--reflection-cell-height));
 
     display: grid;
     width: max-content;
     max-width: 100%;
     gap: 3px;
     margin: 8px auto;
+    position: relative;
+}
+
+.split-reflection-array .split-reflection-cell {
+    width: var(--reflection-cell-width);
+    height: var(--reflection-cell-height);
+    aspect-ratio: 3 / 1;
+    box-sizing: border-box;
+    border: 1px solid #3989b7;
+    border-radius: 4px;
+}
+
+/* アレイ図全体を横切る1本の分割線 */
+.split-reflection-array .split-reflection-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: #e17b39;
+    border-radius: 3px;
+    z-index: 2;
+    pointer-events: none;
 }
 
 .split-reflection-cell {
@@ -1993,14 +2012,4 @@ button:disabled {
 
     border: 1px solid #3989b7;
     border-radius: 4px;
-}
-
-/* 上下の分割線 */
-.split-reflection-boundary {
-    border-left: 1px solid #3989b7;
-    border-top: 4px solid #e17b39;
-}
-
-.split-reflection-array {
-    --reflection-cell-height: clamp(16px, 3.2dvh, 28px);
 }
