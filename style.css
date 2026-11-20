@@ -2013,3 +2013,22 @@ button:disabled {
     border: 1px solid #3989b7;
     border-radius: 4px;
 }
+
+/* かけ算のもんだい①：正解後の操作ボタン */
+
+.split-success-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.split-success-actions .split-success-next {
+    flex: 1 1 180px;
+    max-width: 260px;
+}
+
+#split-success-back {
+    background-color: #3399ff;
+}

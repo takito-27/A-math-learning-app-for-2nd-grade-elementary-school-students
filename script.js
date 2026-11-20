@@ -1870,60 +1870,60 @@ function setupSplitNextButton() {
                      class="split-success-content">
                 </div>
 
-                <button type="button"
-                        id="split-success-next"
-                        class="split-success-next">
-                    つぎのもんだいへ
-                </button>
+                <div class="split-success-actions">
+                    <button type="button"
+                            id="split-success-retry"
+                            class="split-success-next">
+                        もう1回チャレンジ
+                    </button>
+
+                    <button type="button"
+                            id="split-success-back"
+                            class="split-success-next">
+                        もどる
+                    </button>
+                </div>
 
             </div>
         `;
 
         document.body.appendChild(modal);
 
-        const nextButton =
-            document.getElementById("split-success-next");
+        // 同じ問題に再挑戦する
+        document.getElementById("split-success-retry")
+            .addEventListener("click", function () {
 
-        nextButton.addEventListener("click", function () {
+                const data = getCurrentProblem();
 
-            const data = getCurrentProblem();
+                if (
+                    data.style !== "split-multiplication" ||
+                    !splitSolved
+                ) {
+                    return;
+                }
 
-            if (
-                data.style !== "split-multiplication" ||
-                !splitSolved
-            ) {
-                return;
-            }
+                modal.classList.remove("is-visible");
+                modal.setAttribute("aria-hidden", "true");
 
-            // 連続クリックを防ぐ
-            nextButton.disabled = true;
-            splitSolved = false;
-
-            modal.classList.remove("is-visible");
-            modal.setAttribute("aria-hidden", "true");
-
-            if (
-                currentProblem <
-                getCurrentUnit().problems.length - 1
-            ) {
-                currentProblem++;
+                // 問題番号は変えず、同じ問題を初期化
                 updateDisplay();
-            } else {
-                showResultScreen();
-            }
-        });
+            });
+
+        // ホームのメニューに戻る
+        document.getElementById("split-success-back")
+            .addEventListener("click", function () {
+
+                modal.classList.remove("is-visible");
+                modal.setAttribute("aria-hidden", "true");
+
+                splitSolved = false;
+                showMenu();
+            });
     }
 
-    // 新しい問題では非表示にする
+    // 新しい問題ではポップアップを非表示
     modal.classList.remove("is-visible");
     modal.setAttribute("aria-hidden", "true");
-
-    const nextButton =
-        document.getElementById("split-success-next");
-
-    if (nextButton) {
-        nextButton.disabled = false;
-    }
 }
 
 
@@ -1936,10 +1936,10 @@ function showSplitNextButton() {
     const content =
         document.getElementById("split-success-content");
 
-    const nextButton =
-        document.getElementById("split-success-next");
+    const retryButton =
+        document.getElementById("split-success-retry");
 
-    if (!modal || !content || !nextButton) return;
+    if (!modal || !content || !retryButton) return;
 
     const data = getCurrentProblem();
 
@@ -1961,15 +1961,8 @@ function showSplitNextButton() {
 
     }
 
-    const isLastProblem =
-        currentProblem >=
-        getCurrentUnit().problems.length - 1;
 
-    nextButton.textContent = isLastProblem
-        ? "けっかを見る"
-        : "つぎのもんだいへ";
-
-    nextButton.disabled = false;
+    retryButton.disabled = false;
 
     // ポップアップを表示
     modal.classList.add("is-visible");
