@@ -2022,11 +2022,27 @@ button:disabled {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .split-success-actions .split-success-next {
-    flex: 1 1 180px;
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
     max-width: 260px;
+    height: 54px;
+
+    padding: 8px 12px;
+    box-sizing: border-box;
+
+    font-size: 1rem;
+    font-weight: bold;
+    white-space: nowrap;
+    line-height: 1.2;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #split-success-back {
