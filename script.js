@@ -883,6 +883,9 @@ function getSplitHintInfo(data) {
         document.getElementById('formula-inputs').innerHTML = "";
     }
     function showChocolateProblem(data){
+        // 前の問題で表示した青いアレイ図を非表示にする
+        document.getElementById("original-array-section").style.display = "none";
+
         document.getElementById("formula-section-container").style.display = "block";
         document.getElementById('options-section').style.display = "block";
         document.getElementById('options-instruction').innerHTML = "<strong>1. チョコレートをかこったり、ならべかえたりしよう</strong>";
