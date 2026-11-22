@@ -1177,6 +1177,20 @@ function undoChoco() {
         let pathData = "";
         for (let r = 0; r < 5; r++) {
             for (let c = 0; c < 6; c++) {
+                // 選択中の枠は編集用の青い枠で表示するため、
+                // SVGの赤い枠線は描画しない
+            const selectedFrame = chocoFrames.find(
+                frame => frame.id === selectedFrameId
+            );
+
+                const isSelectedFrameCell = selectedFrame &&
+                    r >= selectedFrame.row &&
+                    r < selectedFrame.row + selectedFrame.height &&
+                    c >= selectedFrame.col &&
+                    c < selectedFrame.col + selectedFrame.width;
+
+                if (isSelectedFrameCell) continue;
+
                 const border = chocoBorders[r][c];
                 const x1 = c * 100;
                 const y1 = r * 100;
@@ -1219,6 +1233,9 @@ function renderEditableChocoFrames(container) {
     ];
 
     for (const frame of chocoFrames) {
+
+        // 選択中の枠だけ編集用の枠を表示
+        if (frame.id !== selectedFrameId) continue;
 
         const element = document.createElement("div");
 
