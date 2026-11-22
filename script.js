@@ -269,6 +269,12 @@ const unitData = [
             data.style === "split-multiplication"
         );
 
+        // かけ算のもんだい②の専用レイアウト
+        document.getElementById("problem-screen").classList.toggle(
+            "choco-layout",
+            data.style === "chocolate-multiplication"
+        );
+        
         document.getElementById("unit-name").innerText =unit.title;
         if (data.type === "cover") {
             document.getElementById('cover-screen').style.display = "block";

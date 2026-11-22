@@ -2107,3 +2107,164 @@ button:disabled {
 #split-success-back {
     background-color: #3399ff;
 }
+
+
+/* ==========================================
+   かけ算のもんだい②：タブレット横向き配置
+   ========================================== */
+
+@media (min-width: 701px) and (orientation: landscape) {
+
+    /* 問題画面を左右2列にする */
+    #problem-screen.choco-layout {
+        display: grid !important;
+        grid-template-columns:
+            minmax(0, 48fr) minmax(0, 52fr);
+        grid-template-rows:
+            auto auto auto auto auto;
+        column-gap: 16px;
+        row-gap: 5px;
+
+        width: min(98vw, 1200px);
+        min-height: 0;
+        height: auto;
+        margin: 0 auto;
+        padding: 0 4px;
+        box-sizing: border-box;
+        align-content: start;
+    }
+
+    /* 上部の情報は画面全体の幅を使用 */
+    #problem-screen.choco-layout > .nav-buttons,
+    #problem-screen.choco-layout > #unit-name,
+    #problem-screen.choco-layout > .problem-header,
+    #problem-screen.choco-layout > .problem-content {
+        grid-column: 1 / -1;
+        min-width: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    /* 上部の余白を縮小 */
+    #problem-screen.choco-layout .nav-buttons {
+        min-height: 38px;
+        padding: 0 4px;
+    }
+
+    #problem-screen.choco-layout #unit-name {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+
+    #problem-screen.choco-layout .problem-header {
+        width: 100%;
+        padding: 0 8px;
+        box-sizing: border-box;
+    }
+
+    #problem-screen.choco-layout .problem-title {
+        font-size: 1.15rem;
+    }
+
+    #problem-screen.choco-layout .problem-stars {
+        font-size: 1.1rem;
+    }
+
+    #problem-screen.choco-layout .problem-content {
+        padding: 7px 14px;
+        border: 2px solid #333;
+        border-radius: 10px;
+    }
+
+    #problem-screen.choco-layout .problem-text {
+        font-size: 1.2rem;
+        line-height: 1.4;
+        margin: 0;
+    }
+
+    /* 左側：チョコレート操作領域 */
+    #problem-screen.choco-layout #options-section {
+        grid-column: 1;
+        grid-row: 5;
+        min-width: 0;
+        margin: 0;
+        padding: 4px;
+        align-self: start;
+    }
+
+    #problem-screen.choco-layout #options-section > hr {
+        display: none;
+    }
+
+    #problem-screen.choco-layout #options-instruction {
+        margin: 4px 0 8px;
+        font-size: 1rem;
+    }
+
+    #problem-screen.choco-layout .choco-grid {
+        width: 100%;
+        max-width: 440px;
+        margin: 8px auto;
+    }
+
+    /* 右側：計算式・答え合わせ */
+    #problem-screen.choco-layout > .split-answer-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+
+        grid-column: 2;
+        grid-row: 5;
+
+        min-width: 0;
+        gap: 8px;
+        padding: 4px 8px;
+        box-sizing: border-box;
+    }
+
+    #problem-screen.choco-layout #formula-section-container {
+        margin: 0;
+        padding: 10px 12px;
+        min-width: 0;
+    }
+
+    #problem-screen.choco-layout #formula-instruction {
+        margin: 0 0 8px;
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+
+    #problem-screen.choco-layout .formula-row {
+        gap: 5px;
+        margin-bottom: 8px;
+        flex-wrap: nowrap;
+    }
+
+    #problem-screen.choco-layout .formula-input {
+        width: clamp(34px, 4.5vw, 55px);
+        height: 42px;
+        margin: 0;
+        padding: 0;
+        font-size: 1.2rem;
+        box-sizing: border-box;
+        flex-shrink: 0;
+    }
+
+    #problem-screen.choco-layout
+    .split-answer-panel > button[onclick="checkAnswer()"] {
+        min-height: 44px;
+        padding: 8px 12px;
+        font-size: 1.15rem !important;
+    }
+
+    #problem-screen.choco-layout .answer-feedback {
+        margin-top: 0 !important;
+        gap: 8px !important;
+        flex-wrap: wrap;
+    }
+
+    #problem-screen.choco-layout #result-message {
+        font-size: 1.1rem !important;
+    }
+}
