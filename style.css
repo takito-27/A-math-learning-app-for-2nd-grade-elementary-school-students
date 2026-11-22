@@ -2463,118 +2463,73 @@ button:disabled {
 
 
 /* ==========================================
-   スタート画面：端末サイズに応じた表示調整
+   スタート画面：表示領域に合わせたサイズ
    ========================================== */
 
 .cover-page {
-    width: min(90vw, 1200px);
-    height: auto;
+    width: 87%;
+    height: 95dvh;
+
     min-height: 0;
     max-height: none;
-    padding: clamp(16px, 3vw, 40px);
+
     margin: auto;
+    padding: clamp(16px, 2vw, 40px);
+    box-sizing: border-box;
 }
 
+/* 中身は白い枠に合わせて配置 */
 .cover-content {
     width: 100%;
-    height: auto;
-    gap: clamp(12px, 4vw, 80px);
+    height: 100%;
+    gap: clamp(16px, 4vw, 80px);
 }
 
-.cover-image,
-.cover-text {
-    min-width: 0;
-}
-
+/* 画像が大きくなりすぎないようにする */
 .cover-character {
     width: 100%;
-    max-width: min(360px, 32vw);
+    max-width: 360px;
+    max-height: 65dvh;
     height: auto;
     object-fit: contain;
 }
 
-/* 横向きで画面の高さが小さい端末 */
-@media (orientation: landscape) and (max-height: 700px) {
-    .cover-page {
-        padding: 12px 24px;
-    }
-
-    .cover-character {
-        max-height: 38dvh;
-        width: auto;
-        max-width: 100%;
-    }
-
-    .grade-title {
-        font-size: clamp(1rem, 3vh, 1.5rem);
-        margin-bottom: 8px;
-    }
-
-    .main-title {
-        font-size: clamp(1.5rem, 5vh, 2.5rem);
-        margin-bottom: 10px;
-    }
-
-    .cover-message {
-        font-size: clamp(0.9rem, 2.5vh, 1.2rem);
-        margin-bottom: 12px;
-    }
-
-    .start-btn {
-        width: min(220px, 100%);
-        height: 48px;
-        font-size: 1.3rem;
-    }
-}
-
-/* スマートフォンなど横幅が狭い端末 */
+/* 横幅が狭い画面だけ縦並びにする */
 @media (max-width: 600px) {
-    .cover-page {
-        width: 94vw;
-        padding: 50px 16px 20px;
-    }
-
     .cover-content {
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
     }
 
     .cover-image,
     .cover-text {
         width: 100%;
+        min-width: 0;
     }
 
     .cover-character {
-        width: auto;
-        max-width: min(180px, 55vw);
-        max-height: 24dvh;
+        max-width: 220px;
+        max-height: 30dvh;
     }
 
     .grade-title {
-        font-size: 1.3rem;
-        margin-bottom: 8px;
+        font-size: 1.4rem;
+        margin-bottom: 12px;
     }
 
     .main-title {
-        font-size: clamp(1.6rem, 7vw, 2.2rem);
-        margin-bottom: 12px;
+        font-size: 2rem;
+        margin-bottom: 16px;
     }
 
     .cover-message {
         font-size: 1rem;
-        line-height: 1.5;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
     }
 
     .start-btn {
         width: min(240px, 100%);
-        height: 54px;
+        height: 55px;
         font-size: 1.4rem;
-    }
-
-    .help-btn {
-        top: 12px;
-        right: 12px;
-        padding: 8px 12px;
     }
 }
