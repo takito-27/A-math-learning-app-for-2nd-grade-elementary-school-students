@@ -2668,16 +2668,23 @@ function checkAnswer() {
 
     } else if (data.style === "chocolate-multiplication") {
         isValueCorrect = checkChocolateAnswer(data);
+
+        if (!isValueCorrect) {
+            errorType = getChocolateErrorType();
+        }
     }
 
     // 間違いの種類が変わったらヒントを最初から表示
-    if (data.style === "split-multiplication") {
-        if (hintErrorType !== errorType) {
-            hintStep = 0;
-        }
-
-        hintErrorType = errorType;
+if (
+    data.style === "split-multiplication" ||
+    data.style === "chocolate-multiplication"
+) {
+    if (hintErrorType !== errorType) {
+        hintStep = 0;
     }
+
+    hintErrorType = errorType;
+}
 
     
     
@@ -3010,6 +3017,135 @@ function checkGridTableAnswer(data){
     );
 }
 
+
+function getChocolateErrorType() {
+
+    // ① 枠が2つあるか
+    if (chocoFrames.length !== 2) {
+        return "noFrames";
+    }
+
+    // ② 枠がすべてのチョコレートを正しく囲んでいるか
+    let totalChoco = 0;
+    let totalLocked = 0;
+
+    for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 6; c++) {
+            if (currentChocoMap[r][c] === 1) {
+                totalChoco++;
+
+                if (lockedCells[r][c]) {
+                    totalLocked++;
+                }
+            }
+        }
+    }
+
+    const frameTotal = chocoFrames.reduce(
+        (sum, frame) => sum + frame.width * frame.height,
+        0
+    );
+
+    const invalidFrame = chocoFrames.some(frame => {
+        for (let r = frame.row; r < frame.row + frame.height; r++) {
+            for (let c = frame.col; c < frame.col + frame.width; c++) {
+                if (currentChocoMap[r]?.[c] !== 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    });
+
+    if (
+        totalLocked !== totalChoco ||
+        frameTotal !== totalChoco ||
+        invalidFrame
+    ) {
+        return "frameCoverage";
+    }
+
+    // ③ 計算式を取得する
+    const readNumber = id => {
+        const input = document.getElementById(id);
+        if (!input) return null;
+
+        const value = input.value.trim();
+        if (!/^\d+$/.test(value)) return null;
+
+        return Number(value);
+    };
+
+    const formulas = [];
+
+    for (let i = 0; i < 2; i++) {
+        const a = readNumber(`c_${i}_0`);
+        const b = readNumber(`c_${i}_1`);
+        const result = readNumber(`c_${i}_2`);
+
+        if (a === null || b === null || result === null) {
+            return "incomplete";
+        }
+
+        formulas.push({ a, b, result });
+    }
+
+    const add0 = readNumber("choco_add_0");
+    const add1 = readNumber("choco_add_1");
+    const answer = readNumber("vAns");
+
+    if (add0 === null || add1 === null || answer === null) {
+        return "incomplete";
+    }
+
+    // ④ かけ算の計算を確認
+    for (const formula of formulas) {
+        if (
+            formula.a <= 0 ||
+            formula.b <= 0 ||
+            formula.a * formula.b !== formula.result
+        ) {
+            return "multiplication";
+        }
+    }
+
+    // ⑤ かけ算の式と枠の対応を確認
+    const remainingFrames = [...chocoFrames];
+
+    for (const formula of formulas) {
+        const index = remainingFrames.findIndex(frame =>
+            (formula.a === frame.height &&
+             formula.b === frame.width) ||
+            (formula.a === frame.width &&
+             formula.b === frame.height)
+        );
+
+        if (index === -1) {
+            return "formula";
+        }
+
+        remainingFrames.splice(index, 1);
+    }
+
+    // ⑥ たし算の式を確認
+    const results = formulas
+        .map(formula => formula.result)
+        .sort((a, b) => a - b);
+
+    const addends = [add0, add1]
+        .sort((a, b) => a - b);
+
+    if (
+        results[0] !== addends[0] ||
+        results[1] !== addends[1] ||
+        add0 + add1 !== answer ||
+        answer !== totalChoco
+    ) {
+        return "addition";
+    }
+
+    return null;
+}
 
 
 function checkChocolateAnswer(data) {
