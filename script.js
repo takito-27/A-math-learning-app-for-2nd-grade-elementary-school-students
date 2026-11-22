@@ -913,7 +913,7 @@ function getSplitHintInfo(data) {
                 
         // チョコレート問題を開いたら毎回初期化する
         initChocolate();
-        chocoPairsCount = 1;
+        chocoPairsCount = 2;
         chocoInputsValues = {};
 
         renderChocoFormulaInputs();
@@ -960,36 +960,57 @@ function getSplitHintInfo(data) {
         if (elAns) chocoInputsValues['vAns'] = elAns.value;
     }
 
-    function renderChocoFormulaInputs() {
-        const instructionEl = document.getElementById('formula-instruction');
-        instructionEl.style.display = "flex";
-        instructionEl.style.alignItems = "center";
-        instructionEl.style.justifyContent = "center";
-        instructionEl.style.gap = "10px";
-        instructionEl.innerHTML = `
-            <strong style="margin: 0;">2. 当てはまる 数を かこう</strong>
-            <button type="button" class="btn" onclick="addChocoPair()" style="background: #f1f3f5; color: #495057; border: 1px solid #ced4da; padding: 4px 10px; font-size: 0.9rem;">ついか</button>
-            <button type="button" class="btn" onclick="removeChocoPair()" style="background: #f1f3f5; color: #495057; border: 1px solid #ced4da; padding: 4px 10px; font-size: 0.9rem;">もどす</button>
-        `;
+    
+function renderChocoFormulaInputs() {
+    const instructionEl = document.getElementById('formula-instruction');
 
-        let html = '<div style="margin-bottom: 10px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 5px;">';
-        for (let i = 0; i < chocoPairsCount; i++) {
-            let val0 = chocoInputsValues[`c_${i}_0`] || "";
-            let val1 = chocoInputsValues[`c_${i}_1`] || "";
-            
-            if (i > 0) {
-                html += `<span style="font-size: 24px; margin: 0 3px;">+</span>`;
-            }
-            html += `<input type="text" id="c_${i}_0" value="${val0}" inputmode="none" onclick="openKeypad('c_${i}_0')"> × `;
-            html += `<input type="text" id="c_${i}_1" value="${val1}" inputmode="none" onclick="openKeypad('c_${i}_1')">`;
-        }
-        
-        let ansVal = chocoInputsValues['vAns'] || "";
-        html += `<span style="font-size: 24px; margin: 0 5px;">=</span><input type="text" id="vAns" value="${ansVal}" inputmode="none" onclick="openKeypad('vAns')">`;
-        html += '</div>';
-        
-        document.getElementById('formula-inputs').innerHTML = html;
+    instructionEl.style.display = "block";
+    instructionEl.innerHTML =
+        "<strong>2. それぞれのまとまりを しきにしよう</strong>";
+
+    const input = (id) => {
+        const value = chocoInputsValues[id] || "";
+        return `<input type="text" id="${id}" value="${value}"
+            inputmode="none" onclick="openKeypad('${id}')">`;
+    };
+
+    let html = `
+        <div style="text-align:center; margin-bottom:18px;">
+            <strong>① かけ算のしき</strong>
+        </div>
+    `;
+
+    for (let i = 0; i < 2; i++) {
+        html += `
+            <div style="text-align:center; margin-bottom:12px;">
+                <div style="margin-bottom:5px;">
+                    ${i + 1}つ目のまとまり
+                </div>
+                ${input(`c_${i}_0`)}
+                <span> × </span>
+                ${input(`c_${i}_1`)}
+                <span> = </span>
+                ${input(`c_${i}_2`)}
+            </div>
+        `;
     }
+
+    html += `
+        <div style="text-align:center; margin:20px 0 10px;">
+            <strong>② たし算のしき</strong>
+        </div>
+        <div style="text-align:center; margin-bottom:15px;">
+            ${input("choco_add_0")}
+            <span> + </span>
+            ${input("choco_add_1")}
+            <span> = </span>
+            ${input("vAns")}
+        </div>
+    `;
+
+    document.getElementById('formula-inputs').innerHTML = html;
+}
+
 
     function addChocoPair() {
         saveAllChocoInputs();
