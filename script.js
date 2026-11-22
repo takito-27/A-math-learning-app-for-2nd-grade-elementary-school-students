@@ -3011,47 +3011,89 @@ function checkGridTableAnswer(data){
 }
 
 
+
 function checkChocolateAnswer(data) {
 
-    const userPairs = [];
+    // 数字が正しく入力されているか確認する
+    function getNumber(id) {
+        const element = document.getElementById(id);
+        if (!element) return null;
 
-    // 入力されたかけ算の式を取得する
-    for (let i = 0; i < chocoPairsCount; i++) {
-        const el0 = document.getElementById(`c_${i}_0`);
-        const el1 = document.getElementById(`c_${i}_1`);
+        const value = element.value.trim();
 
-        const v0 = el0 ? el0.value.trim() : "";
-        const v1 = el1 ? el1.value.trim() : "";
+        if (!/^\d+$/.test(value)) {
+            return null;
+        }
 
-        // 未入力や正の整数以外は不正解
-        if (!/^[1-9]\d*$/.test(v0) ||
-            !/^[1-9]\d*$/.test(v1)) {
+        return Number(value);
+    }
+
+    // 2つの枠が作成されているか
+    if (chocoFrames.length !== 2) {
+        return false;
+    }
+
+    // かけ算の式を取得する
+    const formulas = [];
+
+    for (let i = 0; i < 2; i++) {
+
+        const a = getNumber(`c_${i}_0`);
+        const b = getNumber(`c_${i}_1`);
+        const result = getNumber(`c_${i}_2`);
+
+        // 未入力や0を含む式は不正解
+        if (
+            a === null || b === null || result === null ||
+            a <= 0 || b <= 0
+        ) {
             return false;
         }
 
-        userPairs.push([Number(v0), Number(v1)]);
+        // かけ算の計算結果が正しいか
+        if (a * b !== result) {
+            return false;
+        }
+
+        formulas.push({ a, b, result });
     }
 
-    // 答えを取得する
-    const ansEl = document.getElementById("vAns");
-    const ansText = ansEl ? ansEl.value.trim() : "";
+    // たし算の式を取得する
+    const add0 = getNumber("choco_add_0");
+    const add1 = getNumber("choco_add_1");
+    const answer = getNumber("vAns");
 
-    if (!/^\d+$/.test(ansText)) {
+    if (
+        add0 === null ||
+        add1 === null ||
+        answer === null
+    ) {
         return false;
     }
 
-    const answer = Number(ansText);
-
-    // 枠の数と式の数が一致しているか
-    if (chocoFrames.length !== userPairs.length) {
+    // たし算の計算結果が正しいか
+    if (add0 + add1 !== answer) {
         return false;
     }
 
-    if (chocoFrames.length === 0) {
+    // かけ算で求めた2つの個数と、
+    // たし算で使った2つの個数が対応しているか
+    const multiplicationResults = formulas
+        .map(formula => formula.result)
+        .sort((a, b) => a - b);
+
+    const additionValues = [add0, add1]
+        .sort((a, b) => a - b);
+
+    if (
+        multiplicationResults[0] !== additionValues[0] ||
+        multiplicationResults[1] !== additionValues[1]
+    ) {
         return false;
     }
 
-    // チョコレートの総数を数える
+    // チョコレートの総数と、
+    // 枠で囲まれたチョコレートの数を確認する
     let totalChoco = 0;
     let totalLocked = 0;
 
@@ -3073,10 +3115,33 @@ function checkChocolateAnswer(data) {
         return false;
     }
 
-    // 枠の形と式を照合する
+    // 各枠がチョコレートだけを囲んでいるか確認する
+    for (const frame of chocoFrames) {
+
+        for (let r = frame.row; r < frame.row + frame.height; r++) {
+            for (let c = frame.col; c < frame.col + frame.width; c++) {
+
+                if (currentChocoMap[r]?.[c] !== 1) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    // 2つの枠の面積が総数と一致するか
+    const frameTotal = chocoFrames.reduce(
+        (sum, frame) => sum + frame.width * frame.height,
+        0
+    );
+
+    if (frameTotal !== totalChoco) {
+        return false;
+    }
+
+    // かけ算の式と枠の縦・横を照合する
     const remainingFrames = [...chocoFrames];
 
-    for (const [a, b] of userPairs) {
+    for (const formula of formulas) {
 
         const index = remainingFrames.findIndex(frame => {
 
@@ -3084,33 +3149,27 @@ function checkChocolateAnswer(data) {
             const width = frame.width;
 
             return (
-                (a === height && b === width) ||
-                (a === width && b === height)
+                (formula.a === height && formula.b === width) ||
+                (formula.a === width && formula.b === height)
             );
         });
 
-        // 対応する枠が存在しない
+        // 対応する枠が見つからない
         if (index === -1) {
             return false;
         }
 
-        // 同じ枠を二重に使わない
+        // 同じ枠を二重に使用しない
         remainingFrames.splice(index, 1);
     }
 
-    // かけ算の式の合計
-    const formulaTotal = userPairs.reduce(
-        (sum, [a, b]) => sum + a * b,
-        0
-    );
-
-    // 答えとチョコレートの総数を確認
+    // 最後に全体の答えを確認する
     return (
         remainingFrames.length === 0 &&
-        formulaTotal === totalChoco &&
         answer === totalChoco
     );
 }
+
 
 
     document.addEventListener('pointerup', function(e) {
