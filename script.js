@@ -274,7 +274,7 @@ const unitData = [
             "choco-layout",
             data.style === "chocolate-multiplication"
         );
-        
+
         document.getElementById("unit-name").innerText =unit.title;
         if (data.type === "cover") {
             document.getElementById('cover-screen').style.display = "block";
@@ -330,7 +330,25 @@ const unitData = [
 
             document.getElementById("result-message").innerText = "";
             document.getElementById("custom-keypad").style.display = "none";
+            // 問題切り替え時にテンキーの位置を初期化
+            const keypad = document.getElementById("custom-keypad");
 
+            keypad.classList.remove("keypad-dragged");
+
+            [
+                "position",
+                "left",
+                "top",
+                "right",
+                "bottom",
+                "transform",
+                "width",
+                "maxWidth"
+            ].forEach(property => {
+                keypad.style.removeProperty(property);
+            });
+            document.getElementById("problem-screen")
+            .classList.remove("keypad-open");
             activeInputId = null;
 
             // 新しい問題では正解状態をリセット
@@ -2271,6 +2289,138 @@ function closeHintFromBackground(event) {
 
 }
 
+
+/* ==========================================
+   全単元共通：テンキーのドラッグ移動
+   ========================================== */
+
+function setupDraggableKeypad() {
+    const keypad = document.getElementById("custom-keypad");
+    const handle = document.getElementById("keypad-drag-handle");
+
+    if (!keypad || !handle) return;
+
+    let dragging = false;
+    let pointerId = null;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+
+    handle.addEventListener("pointerdown", event => {
+        if (event.button !== 0) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const rect = keypad.getBoundingClientRect();
+
+        // 現在の表示位置を記録
+        initialLeft = rect.left;
+        initialTop = rect.top;
+        startX = event.clientX;
+        startY = event.clientY;
+
+        // パネル内配置から、自由に動かせる固定配置へ変更
+        keypad.style.position = "fixed";
+        keypad.style.left = `${rect.left}px`;
+        keypad.style.top = `${rect.top}px`;
+        keypad.style.bottom = "auto";
+        keypad.style.right = "auto";
+        keypad.style.transform = "none";
+        keypad.style.width = `${rect.width}px`;
+        keypad.style.maxWidth = "none";
+
+        keypad.classList.add("keypad-dragged");
+
+        dragging = true;
+        pointerId = event.pointerId;
+
+        handle.setPointerCapture(event.pointerId);
+    });
+
+    handle.addEventListener("pointermove", event => {
+        if (!dragging || event.pointerId !== pointerId) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const dx = event.clientX - startX;
+        const dy = event.clientY - startY;
+
+        const rect = keypad.getBoundingClientRect();
+
+        // 画面の外へ出ないように制限
+        const maxLeft = Math.max(
+            0,
+            window.innerWidth - rect.width
+        );
+
+        const maxTop = Math.max(
+            0,
+            window.innerHeight - rect.height
+        );
+
+        const newLeft = Math.max(
+            0,
+            Math.min(maxLeft, initialLeft + dx)
+        );
+
+        const newTop = Math.max(
+            0,
+            Math.min(maxTop, initialTop + dy)
+        );
+
+        keypad.style.left = `${newLeft}px`;
+        keypad.style.top = `${newTop}px`;
+    });
+
+    const finishDrag = event => {
+        if (!dragging || event.pointerId !== pointerId) {
+            return;
+        }
+
+        dragging = false;
+        pointerId = null;
+
+        if (handle.hasPointerCapture(event.pointerId)) {
+            handle.releasePointerCapture(event.pointerId);
+        }
+    };
+
+    handle.addEventListener("pointerup", finishDrag);
+    handle.addEventListener("pointercancel", finishDrag);
+
+    // 画面の向きやサイズが変わっても画面内に収める
+    window.addEventListener("resize", () => {
+        if (!keypad.classList.contains("keypad-dragged")) {
+            return;
+        }
+
+        const rect = keypad.getBoundingClientRect();
+
+        const maxLeft = Math.max(
+            0,
+            window.innerWidth - rect.width
+        );
+
+        const maxTop = Math.max(
+            0,
+            window.innerHeight - rect.height
+        );
+
+        keypad.style.left =
+            `${Math.max(0, Math.min(maxLeft, rect.left))}px`;
+
+        keypad.style.top =
+            `${Math.max(0, Math.min(maxTop, rect.top))}px`;
+    });
+}
+
+// ページ読み込み時に一度だけ設定
+setupDraggableKeypad();
+
     function openKeypad(id, isGridTable = false) {
 
         // チョコレート問題では、式の入力時に枠の選択を解除
@@ -2289,7 +2439,8 @@ function closeHintFromBackground(event) {
 
         if (
             !isGridTable &&
-            getCurrentProblem().style !== "split-multiplication"
+            getCurrentProblem().style !== "split-multiplication"&&
+            !keypad.classList.contains("keypad-dragged")
         ) {
             setTimeout(() => {
                 const inputRect = inputEl.getBoundingClientRect();

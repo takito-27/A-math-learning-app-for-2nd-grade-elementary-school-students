@@ -2268,3 +2268,46 @@ button:disabled {
         font-size: 1.1rem !important;
     }
 }
+
+
+/* ==========================================
+   全単元共通：テンキーのドラッグ移動
+   ========================================== */
+
+/* 移動用の取っ手 */
+.keypad-drag-handle {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #93d7ef;
+    color: #18465a;
+    border-radius: 8px;
+    margin-bottom: 6px;
+
+    font-size: 0.95rem;
+    font-weight: bold;
+
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* ドラッグ中 */
+.keypad-drag-handle:active {
+    cursor: grabbing;
+    background: #6fc4e3;
+}
+
+/* 数字ボタンの領域を残りの高さに収める */
+#custom-keypad .keypad-grid {
+    height: calc(100% - 44px);
+    min-height: 0;
+}
+
+/* 移動したテンキーを画面の前面に表示 */
+#custom-keypad.keypad-dragged {
+    z-index: 10000;
+}
