@@ -318,6 +318,13 @@ const unitData = [
             hintButton.style.display = "none";
             // 画面を初期化
             document.getElementById("formula-section-container").style.display = "block";
+
+            // 九九の計算①で作成したアレイ図を削除
+            const normalArray = document.getElementById("normal-array-container");
+            if (normalArray) {
+                normalArray.remove();
+            }
+
             const tableArea = document.getElementById("table-area");
             if (tableArea) tableArea.style.display = "none";
             const chocoArea = document.getElementById("choco-area");
