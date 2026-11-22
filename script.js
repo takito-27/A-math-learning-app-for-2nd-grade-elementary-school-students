@@ -2675,16 +2675,16 @@ function checkAnswer() {
     }
 
     // 間違いの種類が変わったらヒントを最初から表示
-if (
-    data.style === "split-multiplication" ||
-    data.style === "chocolate-multiplication"
-) {
-    if (hintErrorType !== errorType) {
+    if (
+        data.style === "split-multiplication" ||
+        data.style === "chocolate-multiplication"
+    ) {
+        if (hintErrorType !== errorType) {
         hintStep = 0;
-    }
+        }
 
-    hintErrorType = errorType;
-}
+        hintErrorType = errorType;
+    }
 
     
     
