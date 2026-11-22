@@ -1117,11 +1117,12 @@ function undoChoco() {
                     dot.className = 'choco-dot' + (lockedCells[r][c] ? ' locked' : '');
                     dot.addEventListener('pointerdown', (e) => {
                         if (lockedCells[r][c]) {
-                            e.preventDefault();
-                            selectChocoFrame(r, c);
-                            return;
+                            // 枠がある場合は枠を移動
+                            startChocoFrameDrag(e, r, c);
+                        } else {
+                            // 枠がない場合は従来のチョコレート移動
+                            startDrag(e, r, c, dot);
                         }
-                        startDrag(e, r, c, dot);
                     });
                     cell.appendChild(dot);
                 } else {
@@ -1490,6 +1491,188 @@ function rebuildChocoBorders() {
             }
         }
     }
+}
+
+function startChocoFrameDrag(e, r, c) {
+
+    if (e.button !== 0) return;
+
+    const frame = chocoFrames.find(frame =>
+        r >= frame.row &&
+        r < frame.row + frame.height &&
+        c >= frame.col &&
+        c < frame.col + frame.width
+    );
+
+    if (!frame) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    // 操作中の枠を選択
+    selectedFrameId = frame.id;
+
+    const grid = document.getElementById(
+        'choco-grid-container'
+    );
+
+    const rect = grid.getBoundingClientRect();
+
+    const cellWidth = rect.width / 6;
+    const cellHeight = rect.height / 5;
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const pointerId = e.pointerId;
+
+    let moved = false;
+    let lastX = startX;
+    let lastY = startY;
+
+    function moveHandler(event) {
+
+        if (event.pointerId !== pointerId) return;
+
+        lastX = event.clientX;
+        lastY = event.clientY;
+
+        if (
+            Math.abs(lastX - startX) > 5 ||
+            Math.abs(lastY - startY) > 5
+        ) {
+            moved = true;
+        }
+    }
+
+    function endHandler(event) {
+
+        if (event.pointerId !== pointerId) return;
+
+        window.removeEventListener(
+            'pointermove', moveHandler
+        );
+
+        window.removeEventListener(
+            'pointerup', endHandler
+        );
+
+        window.removeEventListener(
+            'pointercancel', cancelHandler
+        );
+
+        if (!moved) {
+            renderChocolate();
+            return;
+        }
+
+        const rowShift = Math.round(
+            (lastY - startY) / cellHeight
+        );
+
+        const colShift = Math.round(
+            (lastX - startX) / cellWidth
+        );
+
+        const newRow = frame.row + rowShift;
+        const newCol = frame.col + colShift;
+
+        // 移動しない場合
+        if (rowShift === 0 && colShift === 0) {
+            renderChocolate();
+            return;
+        }
+
+        // グリッドの外には移動できない
+        if (
+            newRow < 0 ||
+            newCol < 0 ||
+            newRow + frame.height > 5 ||
+            newCol + frame.width > 6
+        ) {
+            renderChocolate();
+            return;
+        }
+
+        // ほかの枠との重なりを確認
+        const overlaps = chocoFrames.some(other => {
+
+            if (other.id === frame.id) return false;
+
+            return (
+                newRow < other.row + other.height &&
+                newRow + frame.height > other.row &&
+                newCol < other.col + other.width &&
+                newCol + frame.width > other.col
+            );
+        });
+
+        if (overlaps) {
+            renderChocolate();
+            return;
+        }
+
+        // 移動先にチョコレートがあるか確認
+        for (
+            let row = newRow;
+            row < newRow + frame.height;
+            row++
+        ) {
+            for (
+                let col = newCol;
+                col < newCol + frame.width;
+                col++
+            ) {
+
+                if (currentChocoMap[row][col] !== 1) {
+                    renderChocolate();
+                    return;
+                }
+            }
+        }
+
+        // 移動前の状態を履歴に保存
+        saveChocoHistory();
+
+        // 枠の位置を更新
+        frame.row = newRow;
+        frame.col = newCol;
+
+        // 境界線と固定状態を更新
+        rebuildChocoBorders();
+
+        renderChocolate();
+    }
+
+    function cancelHandler(event) {
+
+        if (event.pointerId !== pointerId) return;
+
+        window.removeEventListener(
+            'pointermove', moveHandler
+        );
+
+        window.removeEventListener(
+            'pointerup', endHandler
+        );
+
+        window.removeEventListener(
+            'pointercancel', cancelHandler
+        );
+
+        renderChocolate();
+    }
+
+    window.addEventListener(
+        'pointermove', moveHandler
+    );
+
+    window.addEventListener(
+        'pointerup', endHandler
+    );
+
+    window.addEventListener(
+        'pointercancel', cancelHandler
+    );
 }
 
 function selectChocoFrame(r, c) {

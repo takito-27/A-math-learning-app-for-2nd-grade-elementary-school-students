@@ -621,7 +621,8 @@ input {
             cursor: grab;
         }
         .choco-dot.locked {
-            cursor: not-allowed;
+            cursor: move;
+            touch-action: none;
         }
 /* =========================================================
    10. テンキー
