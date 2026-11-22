@@ -286,7 +286,10 @@ const unitData = [
         } else {
             document.getElementById('cover-screen').style.display = "none";
             document.getElementById('problem-screen').style.display =
-            data.style === "split-multiplication" ? "grid" : "block";
+            (
+                data.style === "split-multiplication" ||
+                data.style === "chocolate-multiplication"
+            ) ? "grid" : "block";
             document.getElementById('screen-menu').style.display = "none";
             const problemNo = currentProblem + 1;
             document.getElementById('page-info').innerText = `${currentProblem+1} / ${unit.problems.length}`;
