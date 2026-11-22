@@ -1175,40 +1175,25 @@ function undoChoco() {
         svg.appendChild(greyPath);
         
         let pathData = "";
-        for (let r = 0; r < 5; r++) {
-            for (let c = 0; c < 6; c++) {
-                // 選択中の枠は編集用の青い枠で表示するため、
-                // SVGの赤い枠線は描画しない
-            const selectedFrame = chocoFrames.find(
-                frame => frame.id === selectedFrameId
-            );
 
-                const isSelectedFrameCell = selectedFrame &&
-                    r >= selectedFrame.row &&
-                    r < selectedFrame.row + selectedFrame.height &&
-                    c >= selectedFrame.col &&
-                    c < selectedFrame.col + selectedFrame.width;
+        // 選択していない枠だけ赤い線で描画する
+        for (const frame of chocoFrames) {
 
-                if (isSelectedFrameCell) continue;
-
-                const border = chocoBorders[r][c];
-                const x1 = c * 100;
-                const y1 = r * 100;
-                const x2 = x1 + 100;
-                const y2 = y1 + 100;
-                
-                let rx1 = (c === 0) ? 5 : x1;
-                let ry1 = (r === 0) ? 5 : y1;
-                let rx2 = (c === 5) ? 595 : x2;
-                let ry2 = (r === 4) ? 495 : y2;
-                
-                if (border.top) pathData += ` M ${rx1} ${ry1} L ${rx2} ${ry1}`;
-                if (border.right) pathData += ` M ${rx2} ${ry1} L ${rx2} ${ry2}`;
-                if (border.bottom) pathData += ` M ${rx1} ${ry2} L ${rx2} ${ry2}`;
-                if (border.left) pathData += ` M ${rx1} ${ry1} L ${rx1} ${ry2}`;
+            if (frame.id === selectedFrameId) {
+                continue;
             }
-        }
-        
+
+            const x1 = frame.col * 100;
+            const y1 = frame.row * 100;
+            const x2 = (frame.col + frame.width) * 100;
+            const y2 = (frame.row + frame.height) * 100;
+
+            pathData +=
+                ` M ${x1} ${y1}` +
+                ` L ${x2} ${y1}` +
+                ` L ${x2} ${y2}` +
+                ` L ${x1} ${y2} Z`;
+        }        
         if (pathData) {
             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
             path.setAttribute("d", pathData);
