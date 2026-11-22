@@ -205,6 +205,18 @@ const unitData = [
 
     let chocoPairsCount = 1;
     let chocoInputsValues = {};
+    // 編集可能なチョコレートの枠を管理する
+    let chocoFrames = [];
+
+    // 現在選択している枠のID
+    let selectedFrameId = null;
+
+    // 新しい枠に割り当てるID
+    let nextChocoFrameId = 1;
+
+    // 同時に作成できる枠は最大2つ
+    const maxChocoFrames = 2;
+
 
     // スタート画面→メニュー画面
     function showMenu(){
@@ -883,7 +895,7 @@ function getSplitHintInfo(data) {
             chocoArea.innerHTML = `
                 <div style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">
                     <button type="button" class="btn" onclick="applyFrame()" style="background: #3399ff; color: white;">かこむ</button>
-                    <button type="button" class="btn" onclick="undoChoco()" style="background: #ff6b6b; color: white;">1つもどす</button>
+                    <button type="button" class="btn" onclick="deleteSelectedChocoFrame()" style="background: #ff6b6b; color: white;">枠を消す</button>
                     <button type="button" class="btn" onclick="resetChocolatePosition()" style="background: #94d82d; color: white;">リセット</button>
                 </div>
                 <div id="choco-grid-container" class="choco-grid"></div>
@@ -997,6 +1009,11 @@ function getSplitHintInfo(data) {
     }
 
     function initChocolate() {
+        // 枠の状態を初期化
+        chocoFrames = [];
+        selectedFrameId = null;
+        nextChocoFrameId = 1;
+
         currentChocoMap = JSON.parse(JSON.stringify(initialChocoMap));
         chocoBorders = Array(5).fill().map(() => Array(6).fill().map(() => ({ top: false, right: false, bottom: false, left: false })));
         lockedCells = Array(5).fill().map(() => Array(6).fill(false));
@@ -1006,41 +1023,84 @@ function getSplitHintInfo(data) {
         renderChocolate();
     }
 
-    function resetChocolatePosition() {
-        saveChocoHistory();
-        currentChocoMap = JSON.parse(JSON.stringify(initialChocoMap));
-        chocoBorders = Array(5).fill().map(() => Array(6).fill().map(() => ({ top: false, right: false, bottom: false, left: false })));
-        for (let r = 0; r < 5; r++) {
-            for (let c = 0; c < 6; c++) {
-                lockedCells[r][c] = false;
-                selectedCells[r][c] = false;
-            }
-        }
-        renderChocolate();
-    }
+function resetChocolatePosition() {
 
-    function saveChocoHistory() {
-        chocoHistory.push({
-            map: JSON.parse(JSON.stringify(currentChocoMap)),
-            borders: JSON.parse(JSON.stringify(chocoBorders)),
-            locked: JSON.parse(JSON.stringify(lockedCells))
-        });
-    } 
+    // リセット前の状態を履歴に保存
+    saveChocoHistory();
+
+    // チョコレートを初期配置に戻す
+    currentChocoMap = JSON.parse(
+        JSON.stringify(initialChocoMap)
+    );
+
+    // 作成済みの枠をすべて削除
+    chocoFrames = [];
+    selectedFrameId = null;
+    nextChocoFrameId = 1;
+
+    // 選択状態を初期化
+    selectedCells = Array.from(
+        { length: 5 },
+        () => Array(6).fill(false)
+    );
+
+    dragInfo = null;
+
+    // 枠の境界線と固定状態を再計算
+    rebuildChocoBorders();
+
+    renderChocolate();
+}
+
+function saveChocoHistory() {
+
+    chocoHistory.push({
+
+        map: JSON.parse(
+            JSON.stringify(currentChocoMap)
+        ),
+
+        // 枠そのものの情報を保存
+        frames: JSON.parse(
+            JSON.stringify(chocoFrames)
+        ),
+
+        // 選択していた枠
+        selectedFrameId: selectedFrameId,
+
+        // 次に割り当てる枠ID
+        nextChocoFrameId: nextChocoFrameId
+    });
+}
 
 
-    function undoChoco() {
-        if (chocoHistory.length === 0) return;
-        const previous = chocoHistory.pop();
-        currentChocoMap = JSON.parse(JSON.stringify(previous.map));
-        chocoBorders = JSON.parse(JSON.stringify(previous.borders));
-        lockedCells = JSON.parse(JSON.stringify(previous.locked));
-        for (let r = 0; r < 5; r++) {
-            for (let c = 0; c < 6; c++) {
-                selectedCells[r][c] = false;
-            }
-        }
-        renderChocolate();
-    }
+function undoChoco() {
+
+    if (chocoHistory.length === 0) return;
+
+    const previous = chocoHistory.pop();
+
+    currentChocoMap = JSON.parse(
+        JSON.stringify(previous.map)
+    );
+
+    chocoFrames = JSON.parse(
+        JSON.stringify(previous.frames)
+    );
+
+    selectedFrameId = previous.selectedFrameId;
+    nextChocoFrameId = previous.nextChocoFrameId;
+
+    selectedCells = Array.from(
+        { length: 5 },
+        () => Array(6).fill(false)
+    );
+
+    dragInfo = null;
+
+    rebuildChocoBorders();
+    renderChocolate();
+}
 
     function renderChocolate() {
         const container = document.getElementById('choco-grid-container');
@@ -1055,7 +1115,14 @@ function getSplitHintInfo(data) {
                     cell.className = 'choco-cell';
                     const dot = document.createElement('div');
                     dot.className = 'choco-dot' + (lockedCells[r][c] ? ' locked' : '');
-                    dot.addEventListener('pointerdown', (e) => startDrag(e, r, c, dot));
+                    dot.addEventListener('pointerdown', (e) => {
+                        if (lockedCells[r][c]) {
+                            e.preventDefault();
+                            selectChocoFrame(r, c);
+                            return;
+                        }
+                        startDrag(e, r, c, dot);
+                    });
                     cell.appendChild(dot);
                 } else {
                     cell.className = 'choco-cell empty-cell';
@@ -1308,40 +1375,153 @@ function getSplitHintInfo(data) {
     }
 
     function applyFrame() {
-        let hasSelection = false;
+
+        // 枠は最大2つまで
+        if (chocoFrames.length >= maxChocoFrames) {
+            return;
+        }
+
+        const cells = [];
+
         for (let r = 0; r < 5; r++) {
             for (let c = 0; c < 6; c++) {
                 if (selectedCells[r][c]) {
-                    hasSelection = true;
-                    break;
+                    cells.push({ r, c });
                 }
             }
-            if (hasSelection) break;
         }
-        if (!hasSelection) return;
+
+        if (cells.length === 0) return;
+
+        // 選択したマスが長方形か確認
+        const rows = cells.map(cell => cell.r);
+        const cols = cells.map(cell => cell.c);
+
+        const minRow = Math.min(...rows);
+        const maxRow = Math.max(...rows);
+        const minCol = Math.min(...cols);
+        const maxCol = Math.max(...cols);
+
+        const width = maxCol - minCol + 1;
+        const height = maxRow - minRow + 1;
+
+        if (cells.length !== width * height) {
+            alert("長方形になるように、チョコレートをえらんでね。");
+            return;
+        }
+
+        // 他の枠と重ならないか確認
+        const overlaps = chocoFrames.some(frame =>
+            cells.some(cell =>
+                cell.r >= frame.row &&
+                cell.r < frame.row + frame.height &&
+                cell.c >= frame.col &&
+                cell.c < frame.col + frame.width
+            )
+        );
+
+        if (overlaps) {
+            alert("ほかの枠と重ならないようにしてね。");
+            return;
+        }
 
         saveChocoHistory();
 
-        for (let r = 0; r < 5; r++) {
-            for (let c = 0; c < 6; c++) {
-                if (selectedCells[r][c]) {
-                    if (r === 0 || !selectedCells[r-1][c]) chocoBorders[r][c].top = true;
-                    if (r === 4 || !selectedCells[r+1][c]) chocoBorders[r][c].bottom = true;
-                    if (c === 0 || !selectedCells[r][c-1]) chocoBorders[r][c].left = true;
-                    if (c === 5 || !selectedCells[r][c+1]) chocoBorders[r][c].right = true;
-                    
-                    lockedCells[r][c] = true;
+        const frame = {
+            id: nextChocoFrameId++,
+            row: minRow,
+            col: minCol,
+            width,
+            height
+        };
+
+        chocoFrames.push(frame);
+        selectedFrameId = frame.id;
+
+        for (const cell of cells) {
+            lockedCells[cell.r][cell.c] = true;
+            selectedCells[cell.r][cell.c] = false;
+        }
+
+        rebuildChocoBorders();
+        renderChocolate();
+    }
+
+function rebuildChocoBorders() {
+
+    chocoBorders = Array.from({ length: 5 }, () =>
+        Array.from({ length: 6 }, () => ({
+            top: false,
+            right: false,
+            bottom: false,
+            left: false
+        }))
+    );
+
+    lockedCells = Array.from(
+        { length: 5 },
+        () => Array(6).fill(false)
+    );
+
+    for (const frame of chocoFrames) {
+
+        for (let r = frame.row; r < frame.row + frame.height; r++) {
+            for (let c = frame.col; c < frame.col + frame.width; c++) {
+
+                lockedCells[r][c] = true;
+
+                const border = chocoBorders[r][c];
+
+                if (r === frame.row) {
+                    border.top = true;
+                }
+
+                if (r === frame.row + frame.height - 1) {
+                    border.bottom = true;
+                }
+
+                if (c === frame.col) {
+                    border.left = true;
+                }
+
+                if (c === frame.col + frame.width - 1) {
+                    border.right = true;
                 }
             }
         }
-
-        for (let r = 0; r < 5; r++) {
-            for (let c = 0; c < 6; c++) {
-                selectedCells[r][c] = false;
-            }
-        }
-        renderChocolate();
     }
+}
+
+function selectChocoFrame(r, c) {
+
+    const frame = chocoFrames.find(frame =>
+        r >= frame.row &&
+        r < frame.row + frame.height &&
+        c >= frame.col &&
+        c < frame.col + frame.width
+    );
+
+    if (!frame) return;
+
+    selectedFrameId = frame.id;
+
+    renderChocolate();
+}
+
+function deleteSelectedChocoFrame() {
+
+    if (selectedFrameId === null) return;
+
+    chocoFrames = chocoFrames.filter(
+        frame => frame.id !== selectedFrameId
+    );
+
+    selectedFrameId = null;
+
+    rebuildChocoBorders();
+    renderChocolate();
+}
+
 
     function moveQuestion(step) {
         const unit = getCurrentUnit();
