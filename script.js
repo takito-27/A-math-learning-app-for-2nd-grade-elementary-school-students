@@ -2108,12 +2108,93 @@ function toggleHint() {
             hint.appendChild(item);
         }
 
+    
+    } else if (data.style === "chocolate-multiplication") {
+
+        // かけ算のもんだい②：間違いに応じた3段階ヒント
+        const hintGroups = {
+            noFrames: [
+                "チョコレートを2つのまとまりに分けてみよう。",
+                "それぞれのまとまりを、長方形の枠でかこめるかな？",
+                "2つの枠を作って、ぜんぶのチョコレートを分けてみよう。"
+            ],
+
+            frameCoverage: [
+                "チョコレートのかこみ方を、もう一度見てみよう。",
+                "かこまれていないチョコレートはないかな？",
+                "2つの枠が重なったり、チョコレートのないところをかこんだりしていないか、たしかめよう。"
+            ],
+
+            incomplete: [
+                "まだ書いていないところがあるよ。空いているところをさがそう。",
+                "2つのまとまりについて、それぞれかけ算の式を書いたかな？",
+                "かけ算の答えが出たら、2つの答えをたし算の式に書いてみよう。"
+            ],
+
+            multiplication: [
+                "かけ算の答えを、もう一度たしかめてみよう。",
+                "かけ算の式に書いた数を見て、九九で計算してみよう。",
+                "計算した答えと、枠の中のチョコレートの数が同じか、たしかめよう。"
+            ],
+
+            formula: [
+                "かけ算の式と、チョコレートの枠を見くらべてみよう。",
+                "それぞれの枠は、たてに何こ、よこに何こならんでいるかな？",
+                "2つのかけ算の式が、それぞれの枠のたてとよこの数に合っているか、たしかめよう。"
+            ],
+
+            addition: [
+                "2つのかけ算の答えを、たし算に使っているかな？",
+                "それぞれのまとまりのチョコレートの数を、たしてみよう。",
+                "たし算の答えが、ぜんぶのチョコレートの数と同じになるか、たしかめよう。"
+            ],
+
+            default: [
+                "チョコレートの枠と計算の式を、もう一度見てみよう。",
+                "2つのまとまりの数を、それぞれかけ算で求めよう。",
+                "2つのかけ算の答えをたして、ぜんぶの数を求めよう。"
+            ]
+        };
+
+        const hints = hintGroups[hintErrorType] || hintGroups.default;
+
+        // ヒントを1段階進める（最大3段階）
+        hintStep = Math.min(hintStep + 1, hints.length);
+
+        // タイトルに現在の段階を表示
+        title.innerText = `ヒント ${hintStep}/${hints.length}`;
+
+        // 以前のヒントも含めて表示
+        hint.replaceChildren();
+
+        for (let i = 0; i < hintStep; i++) {
+            const item = document.createElement("div");
+            item.className = "hint-step-item";
+
+            const stepLabel = document.createElement("strong");
+            stepLabel.innerText = `ヒント ${i + 1}`;
+
+            const stepText = document.createElement("p");
+            stepText.innerText = hints[i];
+
+            item.appendChild(stepLabel);
+            item.appendChild(stepText);
+
+            // 今回追加したヒントを強調
+            if (i === hintStep - 1) {
+                item.classList.add("hint-step-current");
+            }
+
+            hint.appendChild(item);
+        }
+
     } else {
 
         // ほかの単元は従来のヒントを表示
         title.innerText = "ヒント";
         hint.innerText = data.hint;
     }
+
 
     // ヒントを表示
     hint.style.display = "block";
