@@ -2109,6 +2109,46 @@ function toggleHint() {
         }
 
     
+    } else if (data.style === "normal") {
+
+        // 九九の計算①：3段階のヒント
+        const a = data.left;
+        const b = data.right;
+
+        const hints = [
+            `${a}×${b}は、${a}が${b}つ分あるということだよ。`,
+            `${a}のだんの九九を、1つずつ思い出してみよう。`,
+            `${a}を${b}回たすと、いくつになるかな？`
+        ];
+
+        hintStep = Math.min(hintStep + 1, hints.length);
+
+        title.innerText = `ヒント ${hintStep}/${hints.length}`;
+
+        hint.replaceChildren();
+
+        for (let i = 0; i < hintStep; i++) {
+            const item = document.createElement("div");
+            item.className = "hint-step-item";
+
+            const stepLabel = document.createElement("strong");
+            stepLabel.innerText = `ヒント ${i + 1}`;
+
+            const stepText = document.createElement("p");
+            stepText.innerText = hints[i];
+
+            item.appendChild(stepLabel);
+            item.appendChild(stepText);
+
+            if (i === hintStep - 1) {
+                item.classList.add("hint-step-current");
+            }
+
+            hint.appendChild(item);
+        }
+
+
+
     } else if (data.style === "chocolate-multiplication") {
 
         // かけ算のもんだい②：間違いに応じた3段階ヒント
