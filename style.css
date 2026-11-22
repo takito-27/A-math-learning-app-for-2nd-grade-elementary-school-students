@@ -2117,7 +2117,7 @@ button:disabled {
 
     /* 問題画面を左右2列にする */
     #problem-screen.choco-layout {
-        display: grid !important;
+        display: grid;
         grid-template-columns:
             minmax(0, 48fr) minmax(0, 52fr);
         grid-template-rows:
