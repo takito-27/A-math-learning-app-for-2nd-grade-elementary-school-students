@@ -1105,6 +1105,16 @@ function undoChoco() {
     function renderChocolate() {
         const container = document.getElementById('choco-grid-container');
         if (!container) return;
+
+        // グリッドの空いているマスを押したときに選択解除
+        container.onclick = function(event) {
+
+            if (
+                event.target.classList.contains("empty-cell")
+            ) {
+            clearChocoFrameSelection();
+            }
+        };
         container.innerHTML = '';
         
         for (let r = 0; r < 5; r++) {
@@ -1605,7 +1615,12 @@ function isValidChocoFrameRect(rect, frameId) {
     return true;
 }
 
+function clearChocoFrameSelection() {
+    if (selectedFrameId === null) return;
 
+    selectedFrameId = null;
+    renderChocolate();
+}
 function startChocoFrameEdit(event, frameId, mode) {
 
     if (event.button !== 0) return;
@@ -1633,6 +1648,9 @@ function startChocoFrameEdit(event, frameId, mode) {
     const pointerId = event.pointerId;
 
     const original = { ...frame };
+
+    // 操作開始前に選択されていたかを記録
+    const wasSelected = selectedFrameId === frameId;
 
     const preview = document.createElement("div");
     preview.className = "choco-frame-preview";
@@ -1786,12 +1804,21 @@ function startChocoFrameEdit(event, frameId, mode) {
 
         cleanup();
 
-        selectedFrameId = frameId;
-
         if (!hasMoved) {
+
+            // 移動用の領域をタップした場合だけ選択を切り替える
+            if (mode === "move") {
+                selectedFrameId = wasSelected ? null : frameId;
+            } else {
+                selectedFrameId = frameId;
+            }
+
             renderChocolate();
             return;
         }
+
+        // ドラッグ操作後は編集対象の枠を選択する
+        selectedFrameId = frameId;
 
         const next = getFinalRect();
 
@@ -2094,6 +2121,11 @@ function closeHintFromBackground(event) {
 }
 
     function openKeypad(id, isGridTable = false) {
+
+        // チョコレート問題では、式の入力時に枠の選択を解除
+        if (getCurrentProblem().style === "chocolate-multiplication") {
+            clearChocoFrameSelection();
+        }
         activeInputId = id;
 
         const keypad = document.getElementById('custom-keypad');
