@@ -1512,6 +1512,15 @@ function deleteSelectedChocoFrame() {
 
     if (selectedFrameId === null) return;
 
+    const frameExists = chocoFrames.some(
+        frame => frame.id === selectedFrameId
+    );
+
+    if (!frameExists) return;
+
+    // 削除前の状態を保存
+    saveChocoHistory();
+
     chocoFrames = chocoFrames.filter(
         frame => frame.id !== selectedFrameId
     );
@@ -1521,6 +1530,7 @@ function deleteSelectedChocoFrame() {
     rebuildChocoBorders();
     renderChocolate();
 }
+
 
 
     function moveQuestion(step) {
