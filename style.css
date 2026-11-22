@@ -2460,3 +2460,121 @@ button:disabled {
         height: 340px;
     }
 }
+
+
+/* ==========================================
+   スタート画面：端末サイズに応じた表示調整
+   ========================================== */
+
+.cover-page {
+    width: min(90vw, 1200px);
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    padding: clamp(16px, 3vw, 40px);
+    margin: auto;
+}
+
+.cover-content {
+    width: 100%;
+    height: auto;
+    gap: clamp(12px, 4vw, 80px);
+}
+
+.cover-image,
+.cover-text {
+    min-width: 0;
+}
+
+.cover-character {
+    width: 100%;
+    max-width: min(360px, 32vw);
+    height: auto;
+    object-fit: contain;
+}
+
+/* 横向きで画面の高さが小さい端末 */
+@media (orientation: landscape) and (max-height: 700px) {
+    .cover-page {
+        padding: 12px 24px;
+    }
+
+    .cover-character {
+        max-height: 38dvh;
+        width: auto;
+        max-width: 100%;
+    }
+
+    .grade-title {
+        font-size: clamp(1rem, 3vh, 1.5rem);
+        margin-bottom: 8px;
+    }
+
+    .main-title {
+        font-size: clamp(1.5rem, 5vh, 2.5rem);
+        margin-bottom: 10px;
+    }
+
+    .cover-message {
+        font-size: clamp(0.9rem, 2.5vh, 1.2rem);
+        margin-bottom: 12px;
+    }
+
+    .start-btn {
+        width: min(220px, 100%);
+        height: 48px;
+        font-size: 1.3rem;
+    }
+}
+
+/* スマートフォンなど横幅が狭い端末 */
+@media (max-width: 600px) {
+    .cover-page {
+        width: 94vw;
+        padding: 50px 16px 20px;
+    }
+
+    .cover-content {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .cover-image,
+    .cover-text {
+        width: 100%;
+    }
+
+    .cover-character {
+        width: auto;
+        max-width: min(180px, 55vw);
+        max-height: 24dvh;
+    }
+
+    .grade-title {
+        font-size: 1.3rem;
+        margin-bottom: 8px;
+    }
+
+    .main-title {
+        font-size: clamp(1.6rem, 7vw, 2.2rem);
+        margin-bottom: 12px;
+    }
+
+    .cover-message {
+        font-size: 1rem;
+        line-height: 1.5;
+        margin-bottom: 16px;
+    }
+
+    .start-btn {
+        width: min(240px, 100%);
+        height: 54px;
+        font-size: 1.4rem;
+    }
+
+    .help-btn {
+        top: 12px;
+        right: 12px;
+        padding: 8px 12px;
+    }
+}
