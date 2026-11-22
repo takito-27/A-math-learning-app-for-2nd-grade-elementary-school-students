@@ -2989,127 +2989,108 @@ function checkGridTableAnswer(data){
     );
 }
 
-function checkChocolateAnswer(data){
 
+function checkChocolateAnswer(data) {
 
-            let isCleanLayout = true;
-            for (let r = 0; r < 5; r++) {
-                for (let c = 0; c < 6; c++) {
-                    if (r === 0) {
-                        if (currentChocoMap[r][c] !== 0) isCleanLayout = false;
-                    } else {
-                        if (currentChocoMap[r][c] !== 1) isCleanLayout = false;
-                    }
+    const userPairs = [];
+
+    // 入力されたかけ算の式を取得する
+    for (let i = 0; i < chocoPairsCount; i++) {
+        const el0 = document.getElementById(`c_${i}_0`);
+        const el1 = document.getElementById(`c_${i}_1`);
+
+        const v0 = el0 ? el0.value.trim() : "";
+        const v1 = el1 ? el1.value.trim() : "";
+
+        // 未入力や正の整数以外は不正解
+        if (!/^[1-9]\d*$/.test(v0) ||
+            !/^[1-9]\d*$/.test(v1)) {
+            return false;
+        }
+
+        userPairs.push([Number(v0), Number(v1)]);
+    }
+
+    // 答えを取得する
+    const ansEl = document.getElementById("vAns");
+    const ansText = ansEl ? ansEl.value.trim() : "";
+
+    if (!/^\d+$/.test(ansText)) {
+        return false;
+    }
+
+    const answer = Number(ansText);
+
+    // 枠の数と式の数が一致しているか
+    if (chocoFrames.length !== userPairs.length) {
+        return false;
+    }
+
+    if (chocoFrames.length === 0) {
+        return false;
+    }
+
+    // チョコレートの総数を数える
+    let totalChoco = 0;
+    let totalLocked = 0;
+
+    for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 6; c++) {
+
+            if (currentChocoMap[r][c] === 1) {
+                totalChoco++;
+
+                if (lockedCells[r][c]) {
+                    totalLocked++;
                 }
             }
+        }
+    }
 
-            let userPairs = [];
-            let isAllInputsFilled = true;
-            for (let i = 0; i < chocoPairsCount; i++) {
-                let el0 = document.getElementById(`c_${i}_0`);
-                let el1 = document.getElementById(`c_${i}_1`);
-                let v0 = el0 ? el0.value.trim() : "";
-                let v1 = el1 ? el1.value.trim() : "";
-                if (v0 === "" || v1 === "") {
-                    isAllInputsFilled = false;
-                    continue;
-                }
-                let val0 = parseInt(v0, 10);
-                let val1 = parseInt(v1, 10);
-                userPairs.push([val0, val1]);
-            }
-            let elAns = document.getElementById('vAns');
-            let vAns = elAns ? elAns.value.trim() : "";
-            let nAns = parseInt(vAns, 10);
+    // すべてのチョコレートが囲まれているか
+    if (totalLocked !== totalChoco) {
+        return false;
+    }
 
-            if (isCleanLayout) {
-                if (chocoPairsCount === 1 && isAllInputsFilled && nAns === 24) {
-                    let p = userPairs[0];
-                    if ((p[0] === 4 && p[1] === 6) || (p[0] === 6 && p[1] === 4)) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            } else {
-                let visited = Array(5).fill().map(() => Array(6).fill(false));
-                let groups = {}; 
-                let totalLockedChoco = 0;
-                let totalChocoInMap = 0;
+    // 枠の形と式を照合する
+    const remainingFrames = [...chocoFrames];
 
-                for (let r = 0; r < 5; r++) {
-                    for (let c = 0; c < 6; c++) {
-                        if (currentChocoMap[r][c] === 1) {
-                            totalChocoInMap++;
-                            if (lockedCells[r][c]) {
-                                totalLockedChoco++;
-                            }
-                        }
-                    }
-                }
+    for (const [a, b] of userPairs) {
 
-                for (let r = 0; r < 5; r++) {
-                    for (let c = 0; c < 6; c++) {
-                        if (currentChocoMap[r][c] === 1 && lockedCells[r][c] && !visited[r][c]) {
-                            let size = 0;
-                            let queue = [[r, c]];
-                            visited[r][c] = true;
+        const index = remainingFrames.findIndex(frame => {
 
-                            while (queue.length > 0) {
-                                let [cr, cc] = queue.shift();
-                                size++;
+            const height = frame.height;
+            const width = frame.width;
 
-                                if (cr > 0 && !chocoBorders[cr][cc].top && lockedCells[cr-1][cc] && currentChocoMap[cr-1][cc] === 1 && !visited[cr-1][cc]) {
-                                    visited[cr-1][cc] = true; queue.push([cr-1, cc]);
-                                }
-                                if (cr < 4 && !chocoBorders[cr][cc].bottom && lockedCells[cr+1][cc] && currentChocoMap[cr+1][cc] === 1 && !visited[cr+1][cc]) {
-                                    visited[cr+1][cc] = true; queue.push([cr+1, cc]);
-                                }
-                                if (cc > 0 && !chocoBorders[cr][cc].left && lockedCells[cr][cc-1] && currentChocoMap[cr][cc-1] === 1 && !visited[cr][cc-1]) {
-                                    visited[cr][cc-1] = true; queue.push([cr, cc-1]);
-                                }
-                                if (cc < 5 && !chocoBorders[cr][cc].right && lockedCells[cr][cc+1] && currentChocoMap[cr][cc+1] === 1 && !visited[cr][cc+1]) {
-                                    visited[cr][cc+1] = true; queue.push([cr, cc+1]);
-                                }
-                            }
-                            if (size > 0) {
-                                groups[size] = (groups[size] || 0) + 1;
-                            }
-                        }
-                    }
-                }
+            return (
+                (a === height && b === width) ||
+                (a === width && b === height)
+            );
+        });
 
-                if (totalLockedChoco !== totalChocoInMap || totalLockedChoco === 0 || !isAllInputsFilled || userPairs.length === 0 || nAns !== totalChocoInMap) {
-                    return false;
-                } else {
-                    let expectedPairs = [];
-                    for (let sz in groups) {
-                        expectedPairs.push([parseInt(sz, 10), groups[sz]]);
-                    }
+        // 対応する枠が存在しない
+        if (index === -1) {
+            return false;
+        }
 
-                    if (userPairs.length !== expectedPairs.length) {
-                        return false;
-                    } else {
-                        let tempExpected = JSON.parse(JSON.stringify(expectedPairs));
-                        let allMatch = true;
-                        for (let upair of userPairs) {
-                            let idx = tempExpected.findIndex(epair => epair[0] === upair[0] && epair[1] === upair[1]);
-                            if (idx !== -1) {
-                                tempExpected.splice(idx, 1);
-                            } else {
-                                allMatch = false;
-                                break;
-                            }
-                        }
-                        return allMatch;
-                    }
-                }
-            }
-        
+        // 同じ枠を二重に使わない
+        remainingFrames.splice(index, 1);
+    }
 
+    // かけ算の式の合計
+    const formulaTotal = userPairs.reduce(
+        (sum, [a, b]) => sum + a * b,
+        0
+    );
+
+    // 答えとチョコレートの総数を確認
+    return (
+        remainingFrames.length === 0 &&
+        formulaTotal === totalChoco &&
+        answer === totalChoco
+    );
 }
+
 
     document.addEventListener('pointerup', function(e) {
         const keypad = document.getElementById('custom-keypad');
