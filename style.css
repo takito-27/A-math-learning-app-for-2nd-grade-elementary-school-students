@@ -2311,3 +2311,152 @@ button:disabled {
 #custom-keypad.keypad-dragged {
     z-index: 10000;
 }
+
+
+/* ==========================================
+   九九の計算①：固定エリアのアレイ図
+   ========================================== */
+
+#normal-array-container {
+    width: 100%;
+}
+
+.normal-array-area {
+    width: 100%;
+    height: 340px;
+    padding: 12px;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background: #f7fcff;
+    border: 2px solid #bde7fa;
+    border-radius: 15px;
+}
+
+.normal-array-grid {
+    display: grid;
+    gap: 3px;
+    justify-content: center;
+    align-content: center;
+    max-width: 100%;
+}
+
+.normal-array-cell {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #3989b7;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.normal-array-label {
+    margin: 12px 0 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+/* ==========================================
+   九九の計算①：タブレット横向き2列配置
+   ========================================== */
+
+@media (min-width: 701px) and (orientation: landscape) {
+
+    #problem-screen.normal-layout {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 48fr) minmax(0, 52fr);
+        grid-template-rows:
+            auto auto auto auto auto;
+        column-gap: 16px;
+        row-gap: 5px;
+
+        width: min(98vw, 1200px);
+        height: auto;
+        min-height: 0;
+        margin: 0 auto;
+        padding: 0 4px;
+        box-sizing: border-box;
+        align-content: start;
+    }
+
+    /* 共通の上部エリア */
+    #problem-screen.normal-layout > .nav-buttons,
+    #problem-screen.normal-layout > #unit-name,
+    #problem-screen.normal-layout > .problem-header {
+        grid-column: 1 / -1;
+        min-width: 0;
+        margin: 0;
+    }
+
+    /* 左側：問題文と図 */
+    #problem-screen.normal-layout > .problem-content {
+        grid-column: 1;
+        grid-row: 4;
+        min-width: 0;
+        margin: 0;
+        padding: 12px 18px;
+    }
+
+    #problem-screen.normal-layout .problem-text {
+        font-size: 1.35rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    #problem-screen.normal-layout #options-section {
+        grid-column: 1;
+        grid-row: 5;
+        min-width: 0;
+        padding: 4px;
+    }
+
+    /* 右側：回答欄 */
+    #problem-screen.normal-layout > .split-answer-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+
+        grid-column: 2;
+        grid-row: 4 / 6;
+
+        min-width: 0;
+        gap: 12px;
+        padding: 12px;
+        box-sizing: border-box;
+    }
+
+    #problem-screen.normal-layout #formula-section-container {
+        margin: 0;
+        padding: 20px 12px;
+    }
+
+    #problem-screen.normal-layout #formula-instruction {
+        margin: 0 0 20px;
+        text-align: center;
+    }
+
+    #problem-screen.normal-layout .formula-row {
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    #problem-screen.normal-layout .formula-input {
+        width: 75px;
+        height: 55px;
+    }
+}
+
+/* スマートフォンでは縦配置に戻す */
+@media (max-width: 700px) {
+    #problem-screen.normal-layout {
+        display: block;
+    }
+
+    .normal-array-area {
+        height: 340px;
+    }
+}

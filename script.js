@@ -275,6 +275,12 @@ const unitData = [
             data.style === "chocolate-multiplication"
         );
 
+        // 九九の計算①の専用レイアウト
+        document.getElementById("problem-screen").classList.toggle(
+            "normal-layout",
+            data.style === "normal"
+        );
+
         document.getElementById("unit-name").innerText =unit.title;
         if (data.type === "cover") {
             document.getElementById('cover-screen').style.display = "block";
@@ -288,7 +294,8 @@ const unitData = [
             document.getElementById('problem-screen').style.display =
             (
                 data.style === "split-multiplication" ||
-                data.style === "chocolate-multiplication"
+                data.style === "chocolate-multiplication" ||
+                data.style === "normal"
             ) ? "grid" : "block";
             document.getElementById('screen-menu').style.display = "none";
             const problemNo = currentProblem + 1;
@@ -387,18 +394,121 @@ const unitData = [
         }    
     }
 
-    function showNormalProblem(data){
-           document.getElementById("options-section").style.display="none";
-                document.getElementById("formula-instruction").style.display="block";
-                document.getElementById("formula-instruction").innerHTML="<strong>こたえをいれよう</strong>";
-                document.getElementById("formula-inputs").innerHTML=
-                `
-                <div class="formula-row">
-                <span class="formula-number">${data.left}</span>×
-                <span class="formula-number">${data.right}</span>=
-                <input class="formula-input"id="vAns"type="text"inputmode="none"onclick="openKeypad('vAns')">
-                </div>`;
+
+function createNormalArray(left, right) {
+    const area = document.createElement("div");
+    area.className = "normal-array-area";
+
+    const grid = document.createElement("div");
+    grid.className = "normal-array-grid";
+
+    // 1行に「かけられる数」個、
+    // 「かける数」行の図を作る
+    const columns = left;
+    const rows = right;
+
+    // 最大9×9でも固定エリアに収まるように調整
+    const cellSize = Math.min(
+        42,
+        320 / columns,
+        260 / rows
+    );
+
+    grid.style.gridTemplateColumns =
+        `repeat(${columns}, ${cellSize}px)`;
+    grid.style.gridAutoRows = `${cellSize}px`;
+
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < columns; col++) {
+            const cell = document.createElement("div");
+            cell.className = "normal-array-cell";
+
+            cell.style.backgroundColor =
+                row % 2 === 0 ? "#79c7ec" : "#a6d974";
+
+            grid.appendChild(cell);
+        }
     }
+
+    const label = document.createElement("p");
+    label.className = "normal-array-label";
+    label.textContent =
+        `${left}こずつ ${right}つ分`;
+
+    area.appendChild(grid);
+    area.appendChild(label);
+
+    return area;
+}
+
+
+    
+function showNormalProblem(data) {
+    const optionsSection =
+        document.getElementById("options-section");
+
+    // 左側に図を表示
+    optionsSection.style.display = "block";
+
+    // ほかの問題用の要素は非表示
+    optionsSection.querySelector("hr").style.display = "none";
+
+    document.getElementById(
+        "original-array-section"
+    ).style.display = "none";
+
+    document.getElementById(
+        "options-instruction"
+    ).style.display = "none";
+
+    document.querySelector(
+        ".options-container"
+    ).style.display = "none";
+
+    // 前の図があれば削除
+    const oldArea =
+        document.getElementById("normal-array-container");
+
+    if (oldArea) {
+        oldArea.remove();
+    }
+
+    // 問題に応じた図を作成
+    const container = document.createElement("div");
+    container.id = "normal-array-container";
+
+    container.appendChild(
+        createNormalArray(data.left, data.right)
+    );
+
+    optionsSection.appendChild(container);
+
+    // 従来の回答欄
+    document.getElementById(
+        "formula-instruction"
+    ).style.display = "block";
+
+    document.getElementById(
+        "formula-instruction"
+    ).innerHTML = "<strong>こたえをいれよう</strong>";
+
+    document.getElementById(
+        "formula-inputs"
+    ).innerHTML = `
+        <div class="formula-row">
+            <span class="formula-number">${data.left}</span> ×
+            <span class="formula-number">${data.right}</span> =
+            <input
+                class="formula-input"
+                id="vAns"
+                type="text"
+                inputmode="none"
+                onclick="openKeypad('vAns')"
+            >
+        </div>
+    `;
+}
+
 
     
     
