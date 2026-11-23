@@ -366,6 +366,11 @@ const unitData = [
             ].forEach(property => {
                 keypad.style.removeProperty(property);
             });
+
+            // 再チャレンジ時もテンキーの初期サイズを維持
+            keypad.style.width = "100%";
+            keypad.style.maxWidth = "650px";
+            
             document.getElementById("problem-screen")
             .classList.remove("keypad-open");
             activeInputId = null;
