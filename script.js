@@ -186,12 +186,19 @@ const unitData = [
 
 
 
+    // チョコレートの盤面サイズ
+    const CHOCO_ROWS = 7;
+    const CHOCO_COLS = 8;
+
+    // 上下左右に1マスずつ空きを追加
     const initialChocoMap = [
-        [0,0,0,1,1,1],
-        [0,0,0,1,1,1],
-        [1,1,1,1,1,1],
-        [1,1,1,1,1,1],
-        [1,1,1,1,1,1]
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,1,1,1,0],
+        [0,0,0,0,1,1,1,0],
+        [0,1,1,1,1,1,1,0],
+        [0,1,1,1,1,1,1,0],
+        [0,1,1,1,1,1,1,0],
+        [0,0,0,0,0,0,0,0]
     ];
 
     let currentChocoMap = [];
@@ -370,7 +377,7 @@ const unitData = [
             // 再チャレンジ時もテンキーの初期サイズを維持
             keypad.style.width = "100%";
             keypad.style.maxWidth = "650px";
-            
+
             document.getElementById("problem-screen")
             .classList.remove("keypad-open");
             activeInputId = null;
@@ -1191,9 +1198,20 @@ function renderChocoFormulaInputs() {
         nextChocoFrameId = 1;
 
         currentChocoMap = JSON.parse(JSON.stringify(initialChocoMap));
-        chocoBorders = Array(5).fill().map(() => Array(6).fill().map(() => ({ top: false, right: false, bottom: false, left: false })));
-        lockedCells = Array(5).fill().map(() => Array(6).fill(false));
-        selectedCells = Array(5).fill().map(() => Array(6).fill(false));
+        chocoBorders = Array(CHOCO_ROWS).fill().map(() =>
+            Array(CHOCO_COLS).fill().map(() => ({
+                top: false,
+                right: false,
+                bottom: false,
+                left: false
+            }))
+        );
+        lockedCells = Array(CHOCO_ROWS).fill().map(() =>
+            Array(CHOCO_COLS).fill(false)
+        );
+        selectedCells = Array(CHOCO_ROWS).fill().map(() =>
+            Array(CHOCO_COLS).fill(false)
+        );
         chocoHistory = [];
         dragInfo = null;
         renderChocolate();
@@ -1216,8 +1234,8 @@ function resetChocolatePosition() {
 
     // 選択状態を初期化
     selectedCells = Array.from(
-        { length: 5 },
-        () => Array(6).fill(false)
+        { length: CHOCO_ROWS },
+        () => Array(CHOCO_COLS).fill(false)
     );
 
     dragInfo = null;
@@ -1268,8 +1286,8 @@ function undoChoco() {
     nextChocoFrameId = previous.nextChocoFrameId;
 
     selectedCells = Array.from(
-        { length: 5 },
-        () => Array(6).fill(false)
+        { length: CHOCO_ROWS },
+        () => Array(CHOCO_COLS).fill(false)
     );
 
     dragInfo = null;
@@ -1293,8 +1311,8 @@ function undoChoco() {
         };
         container.innerHTML = '';
         
-        for (let r = 0; r < 5; r++) {
-            for (let c = 0; c < 6; c++) {
+        for (let r = 0; r < CHOCO_ROWS; r++) {
+            for (let c = 0; c < CHOCO_COLS; c++) {
                 const cell = document.createElement('div');
                 
                 if (currentChocoMap[r][c] === 1) {
@@ -1342,15 +1360,26 @@ function undoChoco() {
 
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.setAttribute("style", "position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1000;");
-        svg.setAttribute("viewBox", "0 0 600 500");
-        
+        svg.setAttribute(
+            "viewBox",
+            `0 0 ${CHOCO_COLS * 100} ${CHOCO_ROWS * 100}`
+        );
         let greyPathData = "";
-        greyPathData += " M 5 5 L 595 5 L 595 495 L 5 495 Z";
-        for (let c = 1; c < 6; c++) {
-            greyPathData += ` M ${c * 100} 5 L ${c * 100} 495`;
+        greyPathData +=
+            ` M 5 5` +
+            ` L ${CHOCO_COLS * 100 - 5} 5` +
+            ` L ${CHOCO_COLS * 100 - 5} ${CHOCO_ROWS * 100 - 5}` +
+            ` L 5 ${CHOCO_ROWS * 100 - 5} Z`;
+        for (let c = 1; c < CHOCO_COLS; c++) {
+            greyPathData +=
+                ` M ${c * 100} 5` +
+                ` L ${c * 100} ${CHOCO_ROWS * 100 - 5}`;
         }
-        for (let r = 1; r < 5; r++) {
-            greyPathData += ` M 5 ${r * 100} L 595 ${r * 100}`;
+
+        for (let r = 1; r < CHOCO_ROWS; r++) {
+            greyPathData +=
+                ` M 5 ${r * 100}` +
+                ` L ${CHOCO_COLS * 100 - 5} ${r * 100}`;
         }
         
         const greyPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -1416,10 +1445,10 @@ function renderEditableChocoFrames(container) {
             element.classList.add("selected");
         }
 
-        element.style.left = `${frame.col / 6 * 100}%`;
-        element.style.top = `${frame.row / 5 * 100}%`;
-        element.style.width = `${frame.width / 6 * 100}%`;
-        element.style.height = `${frame.height / 5 * 100}%`;
+        element.style.left = `${frame.col / CHOCO_COLS * 100}%`;
+        element.style.top = `${frame.row / CHOCO_ROWS * 100}%`;
+        element.style.width = `${frame.width / CHOCO_COLS * 100}%`;
+        element.style.height = `${frame.height / CHOCO_ROWS * 100}%`;
 
         // 枠の内側をドラッグすると移動
         element.addEventListener("pointerdown", event => {
@@ -1460,8 +1489,8 @@ function renderEditableChocoFrames(container) {
 
         let dragTargets = [];
         if (selectedCells[r][c]) {
-            for (let row = 0; row < 5; row++) {
-                for (let col = 0; col < 6; col++) {
+            for (let row = 0; row < CHOCO_ROWS; row++) {
+                for (let col = 0; col < CHOCO_COLS; col++) {
                     if (selectedCells[row][col]) {
                         dragTargets.push({ r: row, c: col });
                     }
@@ -1473,8 +1502,8 @@ function renderEditableChocoFrames(container) {
 
         const gridEl = document.getElementById('choco-grid-container');
         const gridRect = gridEl.getBoundingClientRect();
-        const cellWidth = gridRect.width / 6;
-        const cellHeight = gridRect.height / 5;
+        const cellWidth = gridRect.width / CHOCO_COLS;
+        const cellHeight = gridRect.height / CHOCO_ROWS;
 
         const rect = dotEl.getBoundingClientRect();
         
@@ -1489,7 +1518,7 @@ function renderEditableChocoFrames(container) {
         
         let targetElements = [];
         dragTargets.forEach(target => {
-            const currentCellEl = gridEl.children[target.r * 6 + target.c];
+            const currentCellEl = gridEl.children[target.r * CHOCO_COLS + target.c];
             const currentDotEl = currentCellEl.querySelector('.choco-dot');
             if (currentDotEl) {
                 const dRect = currentDotEl.getBoundingClientRect();
@@ -1568,7 +1597,7 @@ function renderEditableChocoFrames(container) {
                     dragInfo.targets.forEach(t => {
                         const nr = t.r + rowShift;
                         const nc = t.c + colShift;
-                        if (nr < 0 || nr >= 5 || nc < 0 || nc >= 6) {
+                        if (nr < 0 || nr >= CHOCO_ROWS || nc < 0 || nc >= CHOCO_COLS) {
                             canMove = false;
                         } else if (lockedCells[nr][nc]) {
                             canMove = false;
@@ -1593,7 +1622,7 @@ function renderEditableChocoFrames(container) {
                     let nextMap = JSON.parse(JSON.stringify(currentChocoMap));
                     let nextBorders = JSON.parse(JSON.stringify(chocoBorders));
                     let nextLocked = JSON.parse(JSON.stringify(lockedCells));
-                    let nextSelected = Array(5).fill().map(() => Array(6).fill(false));
+                    let nextSelected = Array(CHOCO_ROWS).fill().map(() => Array(CHOCO_COLS).fill(false));
 
                     dragInfo.targets.forEach(t => {
                         nextMap[t.r][t.c] = 0;
@@ -1641,8 +1670,8 @@ function renderEditableChocoFrames(container) {
 
         const cells = [];
 
-        for (let r = 0; r < 5; r++) {
-            for (let c = 0; c < 6; c++) {
+        for (let r = 0; r < CHOCO_ROWS; r++) {
+            for (let c = 0; c < CHOCO_COLS; c++) {
                 if (selectedCells[r][c]) {
                     cells.push({ r, c });
                 }
@@ -1707,8 +1736,8 @@ function renderEditableChocoFrames(container) {
 
 function rebuildChocoBorders() {
 
-    chocoBorders = Array.from({ length: 5 }, () =>
-        Array.from({ length: 6 }, () => ({
+    chocoBorders = Array.from({ length: CHOCO_ROWS  }, () =>
+        Array.from({ length: CHOCO_COLS }, () => ({
             top: false,
             right: false,
             bottom: false,
@@ -1717,8 +1746,8 @@ function rebuildChocoBorders() {
     );
 
     lockedCells = Array.from(
-        { length: 5 },
-        () => Array(6).fill(false)
+        { length: CHOCO_ROWS },
+        () => Array(CHOCO_COLS).fill(false)
     );
 
     for (const frame of chocoFrames) {
@@ -1757,8 +1786,8 @@ function isValidChocoFrameRect(rect, frameId) {
         rect.col < 0 ||
         rect.width < 1 ||
         rect.height < 1 ||
-        rect.row + rect.height > 5 ||
-        rect.col + rect.width > 6
+        rect.row + rect.height > CHOCO_ROWS  ||
+        rect.col + rect.width > CHOCO_COLS
     ) {
         return false;
     }
@@ -1816,8 +1845,8 @@ function startChocoFrameEdit(event, frameId, mode) {
 
     const gridRect = grid.getBoundingClientRect();
 
-    const cellWidth = gridRect.width / 6;
-    const cellHeight = gridRect.height / 5;
+    const cellWidth = gridRect.width / CHOCO_COLS;
+    const cellHeight = gridRect.height / CHOCO_ROWS;
 
     const startX = event.clientX;
     const startY = event.clientY;
@@ -3482,8 +3511,8 @@ function getChocolateErrorType() {
     let totalChoco = 0;
     let totalLocked = 0;
 
-    for (let r = 0; r < 5; r++) {
-        for (let c = 0; c < 6; c++) {
+    for (let r = 0; r < CHOCO_ROWS; r++) {
+        for (let c = 0; c < CHOCO_COLS; c++) {
             if (currentChocoMap[r][c] === 1) {
                 totalChoco++;
 
@@ -3686,8 +3715,8 @@ function checkChocolateAnswer(data) {
     let totalChoco = 0;
     let totalLocked = 0;
 
-    for (let r = 0; r < 5; r++) {
-        for (let c = 0; c < 6; c++) {
+    for (let r = 0; r < CHOCO_ROWS; r++) {
+        for (let c = 0; c < CHOCO_COLS; c++) {
 
             if (currentChocoMap[r][c] === 1) {
                 totalChoco++;
