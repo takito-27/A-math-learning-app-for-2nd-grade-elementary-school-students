@@ -1908,6 +1908,7 @@ button:disabled {
 }
 
 #problem-screen.split-layout #feedback-message,
+
 #problem-screen.split-layout #result-message {
     font-size: 1.1rem !important;
 }
@@ -1915,7 +1916,6 @@ button:disabled {
 /* ==========================================
    テンキー：右側パネルの下に表示
    ========================================== */
-
 #problem-screen.split-layout #custom-keypad {
     position: static;
     left: auto;
@@ -1926,7 +1926,7 @@ button:disabled {
 
     width: 100%;
     max-width: none;
-    height: clamp(155px, 25dvh, 200px);
+    height: 280px;
 
     padding: 5px;
     border: 2px solid #d0d0d0;
@@ -1979,9 +1979,6 @@ button:disabled {
         margin-bottom: 4px;
     }
 
-    #problem-screen.split-layout #custom-keypad {
-        height: 150px;
-    }
 }
 
 /* 横幅が狭い端末への最低限の対応 */
