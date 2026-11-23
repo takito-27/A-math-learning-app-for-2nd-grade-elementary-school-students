@@ -135,7 +135,16 @@ const unitData = [
                 type: "problem",
                 text: "チョコレートの数を九九をつかって、くふうしてもとめましょう。",
                 hint: "「1つ分の数」×「いくつ分」＝「ぜんぶの数」になるようにしきをたてよう。",
-                style: "chocolate-multiplication"
+                style: "chocolate-multiplication",
+                chocoPattern: 1
+            },
+            {
+                type: "problem",
+                text: "チョコレートの数を九九をつかって、くふうしてもとめましょう。",
+                hint: "2つのまとまりに分けて、それぞれの数を九九でもとめよう。",
+                style: "chocolate-multiplication",
+                chocoPattern: 2,
+                difficulty: 2
             }
         ]
     }
@@ -159,6 +168,26 @@ const unitData = [
     ];
 
     let currentChocoMap = [];
+
+    // 第2問：22個のチョコレート
+    const secondChocoMap = [
+        [0,0,0,0,0,0,0,0],
+        [0,1,1,1,1,1,0,0],
+        [0,1,1,1,1,1,0,0],
+        [0,0,1,1,1,1,0,0],
+        [0,0,1,1,1,1,0,0],
+        [0,0,1,1,1,1,0,0],
+        [0,0,0,0,0,0,0,0]
+    ];
+
+    // 現在の問題に対応する初期配置を取得
+    function getCurrentChocoInitialMap() {
+        const data = getCurrentProblem();
+
+        return data.chocoPattern === 2
+            ? secondChocoMap
+            : initialChocoMap;
+    }
     let chocoBorders = [];
     let lockedCells = [];
     let selectedCells = [];
@@ -1156,7 +1185,7 @@ function renderChocoFormulaInputs() {
         selectedFrameId = null;
         nextChocoFrameId = 1;
 
-        currentChocoMap = JSON.parse(JSON.stringify(initialChocoMap));
+        currentChocoMap = JSON.parse(JSON.stringify(getCurrentChocoInitialMap()));
         chocoBorders = Array(CHOCO_ROWS).fill().map(() =>
             Array(CHOCO_COLS).fill().map(() => ({
                 top: false,
@@ -1183,7 +1212,7 @@ function resetChocolatePosition() {
 
     // チョコレートを初期配置に戻す
     currentChocoMap = JSON.parse(
-        JSON.stringify(initialChocoMap)
+        JSON.stringify(getCurrentChocoInitialMap())
     );
 
     // 作成済みの枠をすべて削除
