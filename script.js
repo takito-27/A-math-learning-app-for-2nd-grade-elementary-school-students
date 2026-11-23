@@ -3011,6 +3011,183 @@ function showSplitNextButton() {
 }
 
 /* ========================================
+   かけ算の計算②：正解時の振り返り
+   ======================================== */
+
+function createChocolateReflectionVisual() {
+
+    if (chocoFrames.length !== 2) {
+        return null;
+    }
+
+    const rows = currentChocoMap.length;
+    const cols = currentChocoMap[0].length;
+
+    const colors = ["#79c7ec", "#a6d974"];
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "split-reflection";
+
+    // 分け方の説明
+    const description = document.createElement("p");
+    description.className = "split-reflection-description";
+    description.textContent =
+        "チョコレートを2つに分けて考えたんだね。";
+
+    wrapper.appendChild(description);
+
+    // 児童が入力した2つのかけ算
+    const formulas = [];
+
+    for (let i = 0; i < 2; i++) {
+        formulas.push({
+            a: Number(document.getElementById(`c_${i}_0`).value),
+            b: Number(document.getElementById(`c_${i}_1`).value),
+            result: Number(document.getElementById(`c_${i}_2`).value)
+        });
+    }
+
+    // 入力した式と枠を対応付ける
+    const remainingFrames = [...chocoFrames];
+
+    const orderedFrames = formulas.map(formula => {
+
+        const index = remainingFrames.findIndex(frame =>
+            (formula.a === frame.width &&
+             formula.b === frame.height) ||
+            (formula.a === frame.height &&
+             formula.b === frame.width)
+        );
+
+        if (index === -1) return null;
+
+        return remainingFrames.splice(index, 1)[0];
+    });
+
+    if (orderedFrames.some(frame => !frame)) {
+        return null;
+    }
+
+    // チョコレートのアレイ図
+    const array = document.createElement("div");
+    array.className = "choco-reflection-array";
+
+    array.style.gridTemplateColumns =
+        `repeat(${cols}, minmax(0, 1fr))`;
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+
+            const cell = document.createElement("div");
+            cell.className = "choco-reflection-cell";
+
+            const frameIndex = orderedFrames.findIndex(frame =>
+                r >= frame.row &&
+                r < frame.row + frame.height &&
+                c >= frame.col &&
+                c < frame.col + frame.width
+            );
+
+            if (frameIndex !== -1) {
+                cell.style.backgroundColor = colors[frameIndex];
+            }
+
+            if (currentChocoMap[r][c] === 1) {
+
+                const dot = document.createElement("div");
+                dot.className = "choco-reflection-dot";
+
+                cell.appendChild(dot);
+            }
+
+            array.appendChild(cell);
+        }
+    }
+
+    // 囲んだ2つの枠を重ねて表示
+    orderedFrames.forEach((frame, index) => {
+
+        const border = document.createElement("div");
+        border.className = "choco-reflection-frame";
+
+        border.style.borderColor = colors[index];
+
+        border.style.left =
+            `${frame.col / cols * 100}%`;
+
+        border.style.top =
+            `${frame.row / rows * 100}%`;
+
+        border.style.width =
+            `${frame.width / cols * 100}%`;
+
+        border.style.height =
+            `${frame.height / rows * 100}%`;
+
+        array.appendChild(border);
+    });
+
+    wrapper.appendChild(array);
+
+    // 2つのかけ算の式
+    const formulaContainer = document.createElement("div");
+    formulaContainer.className = "split-reflection-formulas";
+
+    formulas.forEach((formula, index) => {
+
+        const row = document.createElement("div");
+        row.className = "split-reflection-formula";
+
+        row.style.borderLeft =
+            `7px solid ${colors[index]}`;
+
+        const label = document.createElement("span");
+        label.className = "split-reflection-formula-label";
+        label.textContent = `${index + 1}つめ`;
+
+        const expression = document.createElement("strong");
+        expression.textContent =
+            `${formula.a} × ${formula.b} = ${formula.result}`;
+
+        row.appendChild(label);
+        row.appendChild(expression);
+
+        formulaContainer.appendChild(row);
+    });
+
+    wrapper.appendChild(formulaContainer);
+
+    // 児童が入力したたし算
+    const add0 =
+        document.getElementById("choco_add_0").value;
+
+    const add1 =
+        document.getElementById("choco_add_1").value;
+
+    const answer =
+        document.getElementById("vAns").value;
+
+    const addition = document.createElement("div");
+    addition.className = "split-reflection-addition";
+
+    addition.textContent =
+        `${add0} + ${add1} = ${answer}`;
+
+    wrapper.appendChild(addition);
+
+    // 最後のメッセージ
+    const message = document.createElement("p");
+    message.className = "split-reflection-message";
+
+    message.textContent =
+        "九九を使って、じょうずに計算できたね！";
+
+    wrapper.appendChild(message);
+
+    return wrapper;
+}
+
+/* ========================================
    かけ算の計算②：正解ポップアップ
    ======================================== */
 
@@ -3027,14 +3204,22 @@ function showChocolateSuccessModal() {
 
     if (!modal || !content || !retryButton) return;
 
-    // 前の問題の振り返り内容を削除
+    // 前の振り返り内容を削除
     content.replaceChildren();
 
-    const message = document.createElement("p");
-    message.textContent =
-        "ほかの分け方も考えてみよう！";
+    // 自分が囲んだチョコレートと計算式を表示
+    const reflectionVisual =
+        createChocolateReflectionVisual();
 
-    content.appendChild(message);
+    if (reflectionVisual) {
+        content.appendChild(reflectionVisual);
+    } else {
+        const message = document.createElement("p");
+        message.textContent =
+            "ほかの分け方も考えてみよう！";
+
+        content.appendChild(message);
+    }
 
     retryButton.disabled = false;
 
@@ -3043,7 +3228,6 @@ function showChocolateSuccessModal() {
 
     retryButton.focus();
 }
-
     
 function checkAnswer() {
     const data = getCurrentProblem();

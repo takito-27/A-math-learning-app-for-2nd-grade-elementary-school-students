@@ -2533,3 +2533,53 @@ button:disabled {
         font-size: 1.4rem;
     }
 }
+
+/* ========================================
+   かけ算の計算②：正解後の振り返り図
+   ======================================== */
+
+.choco-reflection-array {
+    display: grid;
+    position: relative;
+
+    width: min(100%, 320px);
+    margin: 15px auto 25px;
+
+    background: #eeeeee;
+    border: 2px solid #cccccc;
+    border-radius: 8px;
+
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.choco-reflection-cell {
+    aspect-ratio: 1;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: white;
+    border: 1px solid #dddddd;
+
+    box-sizing: border-box;
+}
+
+.choco-reflection-dot {
+    width: 72%;
+    height: 72%;
+
+    background: #5c3a21;
+    border-radius: 50%;
+}
+
+.choco-reflection-frame {
+    position: absolute;
+
+    border: 3px solid;
+    box-sizing: border-box;
+
+    pointer-events: none;
+    z-index: 2;
+}
