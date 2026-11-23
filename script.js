@@ -3032,7 +3032,7 @@ function createChocolateReflectionVisual() {
     const description = document.createElement("p");
     description.className = "split-reflection-description";
     description.textContent =
-        "チョコレートを2つに分けて考えたんだね。";
+        "自分の分け方をふり返ってみよう！";
 
     wrapper.appendChild(description);
 
