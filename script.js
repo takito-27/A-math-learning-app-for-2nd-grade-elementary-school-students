@@ -11,6 +11,8 @@ let hintStep = 0;
 let hintErrorType = null;
 // かけ算の計算①で正解済みかどうか
 let splitSolved = false;
+// かけ算の計算②で正解済みかどうか
+let chocoSolved = false;
 function getCurrentProblem() {
     return unitData[currentUnit - 1].problems[currentProblem];
 }
@@ -370,6 +372,7 @@ const unitData = [
 
             // 新しい問題では正解状態をリセット
             splitSolved = false;
+            chocoSolved = false;
 
             // 正解後の専用ボタンを準備
             setupSplitNextButton();
@@ -2896,10 +2899,10 @@ function setupSplitNextButton() {
 
                 const data = getCurrentProblem();
 
-                if (
-                    data.style !== "split-multiplication" ||
-                    !splitSolved
-                ) {
+                const canRetry =
+                    (data.style === "split-multiplication" && splitSolved) ||
+                    (data.style === "chocolate-multiplication" && chocoSolved);
+                if (!canRetry) {
                     return;
                 }
 
@@ -2918,6 +2921,7 @@ function setupSplitNextButton() {
                 modal.setAttribute("aria-hidden", "true");
 
                 splitSolved = false;
+                chocoSolved = false;
                 showMenu();
             });
     }
@@ -2969,16 +2973,51 @@ function showSplitNextButton() {
     modal.classList.add("is-visible");
     modal.setAttribute("aria-hidden", "false");
 
-    nextButton.focus();
+    retryButton.focus();
 }
 
+/* ========================================
+   かけ算の計算②：正解ポップアップ
+   ======================================== */
 
+function showChocolateSuccessModal() {
+
+    const modal =
+        document.getElementById("split-success-modal");
+
+    const content =
+        document.getElementById("split-success-content");
+
+    const retryButton =
+        document.getElementById("split-success-retry");
+
+    if (!modal || !content || !retryButton) return;
+
+    // 前の問題の振り返り内容を削除
+    content.replaceChildren();
+
+    const message = document.createElement("p");
+    message.textContent =
+        "ほかの分け方も考えてみよう！";
+
+    content.appendChild(message);
+
+    retryButton.disabled = false;
+
+    modal.classList.add("is-visible");
+    modal.setAttribute("aria-hidden", "false");
+
+    retryButton.focus();
+}
 
     
 function checkAnswer() {
     const data = getCurrentProblem();
     // 正解後の重複した答え合わせを防ぐ
-    if (data.style === "split-multiplication" && splitSolved) {
+    if (
+        (data.style === "split-multiplication" && splitSolved) ||
+        (data.style === "chocolate-multiplication" && chocoSolved)
+    ) {
         return;
     }
 
@@ -3100,6 +3139,14 @@ function checkAnswer() {
             // 振り返りは専用ポップアップに表示
             showSplitNextButton();
 
+        } else if (data.style === "chocolate-multiplication") {
+
+            chocoSolved = true;
+
+            res.innerText = "せいかい！";
+
+            showChocolateSuccessModal();
+
         } else {
             res.innerText = "せいかい！";
         }
@@ -3112,7 +3159,10 @@ function checkAnswer() {
         hintErrorType = null;
         hintStep = 0;
 
-        if (data.style !== "split-multiplication") {
+        if (
+            data.style !== "split-multiplication" &&
+            data.style !== "chocolate-multiplication"
+        ) {
 
             // ほかの単元は従来どおり2秒後に進む
             setTimeout(function () {
