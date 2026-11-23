@@ -4,6 +4,40 @@ let mistakeCount = [];
 let currentProblemPage = 0;
 const problemsPerPage = 3;
 
+// 九九の計算①：81パターンからランダムに10問を作成
+function createRandomKukuProblems() {
+
+    const problems = [];
+
+    for (let left = 1; left <= 9; left++) {
+        for (let right = 1; right <= 9; right++) {
+
+            problems.push({
+                type: "problem",
+                text: `${left}×${right}をもとめましょう。`,
+                hint: `${left}のだんをおもいだそう。`,
+                style: "normal",
+                left: left,
+                right: right,
+                answer: left * right,
+                difficulty: 1
+            });
+        }
+    }
+
+    // Fisher-Yates法でランダムに並び替える
+    for (let i = problems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [problems[i], problems[j]] =
+            [problems[j], problems[i]];
+    }
+
+    // 重複なしで10問取り出す
+    return problems.slice(0, 10);
+}
+
+
 // 現在表示しているヒントの段階を管理
 let hintStep = 0;
 
@@ -24,84 +58,7 @@ const unitData = [
     {
         id: 1,
         title: "九九の計算①",
-        problems: [
-            {
-                type:"problem",
-                text:"6×4をもとめましょう。",
-                hint:"6のだんをおもいだそう。",
-                style:"normal",
-                left:6,
-                right:4,
-                answer:24,
-                difficulty:1,
-            },
-
-            {
-                type:"problem",
-                text:"7×8をもとめましょう。",
-                hint:"7のだんをおもいだそう。",
-                style:"normal",
-                left:7,
-                right:8,
-                answer:56,
-                difficulty:1,
-            },
-
-            {
-                type:"problem",
-                text:"8×6をもとめましょう。",
-                hint:"8のだんをおもいだそう。",
-                style:"normal",
-                left:8,
-                right:6,
-                answer:48,
-                difficulty:2,
-            },
-
-            {
-                type:"problem",
-                text:"9×7をもとめましょう。",
-                hint:"9のだんをおもいだそう。",
-                style:"normal",
-                left:9,
-                right:7,
-                answer:63,
-                difficulty:2,
-            },
-
-            {
-                type:"problem",
-                text:"4×9をもとめましょう。",
-                hint:"4のだんをおもいだそう。",
-                style:"normal",
-                left:4,
-                right:9,
-                answer:36,
-                difficulty:2,
-            },
-
-            {
-                type:"problem",
-                text:"8×8をもとめましょう。",
-                hint:"8のだんをおもいだそう。",
-                style:"normal",
-                left:8,
-                right:8,
-                answer:64,
-                difficulty:3,
-            },
-
-            {
-                type:"problem",
-                text:"9×9をもとめましょう。",
-                hint:"9のだんをおもいだそう。",
-                style:"normal",
-                left:9,
-                right:9,
-                answer:81,
-                difficulty:3,
-            },
-        ]
+        problems: createRandomKukuProblems()
     },
 
     {
@@ -396,7 +353,9 @@ const unitData = [
 
             if (nextButton) {
 
-                if (data.style === "split-multiplication") {
+                if (data.style === "split-multiplication"||
+                    data.style === "normal"
+                ) {
 
                     // かけ算の計算①では、正解後の専用ボタンを使用
                     nextButton.style.display = "none";
@@ -3988,6 +3947,12 @@ function openUnit(number){
     // 現在の単元番号を保存
     currentUnit = number;
     currentProblemPage = 0;
+
+     // 九九の計算①は、単元を開くたびに10問を抽選
+    if (number === 1) {
+        unitData[0].problems = createRandomKukuProblems();
+    }
+
     mistakeCount = new Array(getCurrentUnit().problems.length).fill(0);
 
     // メニュー画面を非表示
@@ -4215,6 +4180,12 @@ function showResultScreen(){
 function retryUnit(){
 
     currentProblem = 0;
+
+    // 九九の計算①は再挑戦時に問題を再抽選
+    if (currentUnit === 1) {
+        unitData[0].problems = createRandomKukuProblems();
+    }
+
 
     mistakeCount = new Array(getCurrentUnit().problems.length).fill(0);
 
