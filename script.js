@@ -141,7 +141,7 @@ const unitData = [
             {
                 type: "problem",
                 text: "チョコレートの数を九九をつかって、くふうしてもとめましょう。",
-                hint: "2つのまとまりに分けて、それぞれの数を九九でもとめよう。",
+                hint: "1つか2つのまとまりを作って、チョコレートの数を九九でもとめよう。",
                 style: "chocolate-multiplication",
                 chocoPattern: 2,
                 difficulty: 2
@@ -1653,6 +1653,7 @@ function renderEditableChocoFrames(container) {
 
         // 枠は最大2つまで
         if (chocoFrames.length >= maxChocoFrames) {
+            alert("かこむのは２回まででかんがえてね");
             return;
         }
 
@@ -2323,21 +2324,21 @@ function toggleHint() {
         // かけ算のもんだい②：間違いに応じた3段階ヒント
         const hintGroups = {
             noFrames: [
-                "チョコレートを2つのまとまりに分けてみよう。",
-                "それぞれのまとまりを、長方形の枠でかこめるかな？",
-                "2つの枠を作って、ぜんぶのチョコレートを分けてみよう。"
+                "チョコレートのまとまりを見つけてみよう。",
+                "まとまりを、長方形の枠でかこめるかな？",
+                "1つか2つの枠で、ぜんぶのチョコレートをかこんでみよう。"
             ],
 
             frameCoverage: [
                 "チョコレートのかこみ方を、もう一度見てみよう。",
                 "かこまれていないチョコレートはないかな？",
-                "2つの枠が重なったり、チョコレートのないところをかこんだりしていないか、たしかめよう。"
+                "枠のたてとよこの数をたしかめよう。枠が1つのときは、使わない式を0×0＝0にしよう。"
             ],
 
             incomplete: [
                 "まだ書いていないところがあるよ。空いているところをさがそう。",
-                "2つのまとまりについて、それぞれかけ算の式を書いたかな？",
-                "かけ算の答えが出たら、2つの答えをたし算の式に書いてみよう。"
+                "まとまりの数を、かけ算の式に書いてみよう。",
+                "まとまりが1つのときは、使わない式を0×0＝0にしよう。"
             ],
 
             multiplication: [
@@ -2360,7 +2361,7 @@ function toggleHint() {
 
             default: [
                 "チョコレートの枠と計算の式を、もう一度見てみよう。",
-                "2つのまとまりの数を、それぞれかけ算で求めよう。",
+                "かこんだまとまりの数を、かけ算で求めよう。", 
                 "2つのかけ算の答えをたして、ぜんぶの数を求めよう。"
             ]
         };
@@ -3004,7 +3005,9 @@ function showSplitNextButton() {
 
 function createChocolateReflectionVisual() {
 
-    if (chocoFrames.length !== 2) {
+    if (chocoFrames.length === 0 ||
+        chocoFrames.length > maxChocoFrames
+    ) {
         return null;
     }
 
@@ -3040,6 +3043,16 @@ function createChocolateReflectionVisual() {
 
     const orderedFrames = formulas.map(formula => {
 
+        // 0×0＝0には対応する枠がない
+        if (
+            chocoFrames.length === 1 &&
+            formula.a === 0 &&
+            formula.b === 0 &&
+            formula.result === 0
+        ) {
+            return null;
+        }
+
         const index = remainingFrames.findIndex(frame =>
             (formula.a === frame.width &&
              formula.b === frame.height) ||
@@ -3052,7 +3065,19 @@ function createChocolateReflectionVisual() {
         return remainingFrames.splice(index, 1)[0];
     });
 
-    if (orderedFrames.some(frame => !frame)) {
+    // 0×0＝0以外の式には対応する枠が必要
+    if (
+        orderedFrames.some((frame, index) =>
+            !frame &&
+            !(
+                chocoFrames.length === 1 &&
+                formulas[index].a === 0 &&
+                formulas[index].b === 0 &&
+                formulas[index].result === 0
+            )
+        ) ||
+        remainingFrames.length !== 0
+    ) {
         return null;
     }
 
@@ -3070,6 +3095,7 @@ function createChocolateReflectionVisual() {
             cell.className = "choco-reflection-cell";
 
             const frameIndex = orderedFrames.findIndex(frame =>
+                frame !== null &&
                 r >= frame.row &&
                 r < frame.row + frame.height &&
                 c >= frame.col &&
@@ -3094,6 +3120,9 @@ function createChocolateReflectionVisual() {
 
     // 囲んだ2つの枠を重ねて表示
     orderedFrames.forEach((frame, index) => {
+
+         // 枠が存在しない場合は描画しない
+        if (!frame) return;
 
         const border = document.createElement("div");
         border.className = "choco-reflection-frame";
@@ -3127,7 +3156,11 @@ function createChocolateReflectionVisual() {
         row.className = "split-reflection-formula";
 
         row.style.borderLeft =
-            `7px solid ${colors[index]}`;
+            `7px solid ${
+                orderedFrames[index]
+                ? colors[index]
+                : "#cccccc"
+            }`;
 
         const label = document.createElement("span");
         label.className = "split-reflection-formula-label";
@@ -3674,8 +3707,11 @@ function checkGridTableAnswer(data){
 
 function getChocolateErrorType() {
 
-    // ① 枠が2つあるか
-    if (chocoFrames.length !== 2) {
+    // ① 枠が1つまたは2つあるか
+    if (
+        chocoFrames.length === 0 ||
+        chocoFrames.length > maxChocoFrames
+    ) {
         return "noFrames";
     }
 
@@ -3754,6 +3790,18 @@ function getChocolateErrorType() {
 
     // ④ かけ算の計算を確認
     for (const formula of formulas) {
+
+        // 枠が1つの場合、使わない式は0×0＝0を許容
+        const isUnusedFormula =
+            chocoFrames.length === 1 &&
+            formula.a === 0 &&
+            formula.b === 0 &&
+            formula.result === 0;
+
+        if (isUnusedFormula) {
+            continue;
+        }
+
         if (
             formula.a <= 0 ||
             formula.b <= 0 ||
@@ -3767,6 +3815,17 @@ function getChocolateErrorType() {
     const remainingFrames = [...chocoFrames];
 
     for (const formula of formulas) {
+
+        // 枠が1つの場合、0×0＝0は照合しない
+        if (
+            chocoFrames.length === 1 &&
+            formula.a === 0 &&
+            formula.b === 0 &&
+            formula.result === 0
+        ) {
+            continue;
+        }
+
         const index = remainingFrames.findIndex(frame =>
             (formula.a === frame.height &&
              formula.b === frame.width) ||
@@ -3781,6 +3840,10 @@ function getChocolateErrorType() {
         remainingFrames.splice(index, 1);
     }
 
+    // すべての枠が計算式に対応しているか確認
+    if (remainingFrames.length !== 0) {
+        return "formula";
+    }
     // ⑥ たし算の式を確認
     const results = formulas
         .map(formula => formula.result)
@@ -3818,8 +3881,11 @@ function checkChocolateAnswer(data) {
         return Number(value);
     }
 
-    // 2つの枠が作成されているか
-    if (chocoFrames.length !== 2) {
+    // 枠が1つまたは2つ作成されているか
+    if (
+        chocoFrames.length === 0 ||
+        chocoFrames.length > maxChocoFrames
+    ) {
         return false;
     }
 
@@ -3832,11 +3898,23 @@ function checkChocolateAnswer(data) {
         const b = getNumber(`c_${i}_1`);
         const result = getNumber(`c_${i}_2`);
 
-        // 未入力や0を含む式は不正解
+       // 未入力は不正解
         if (
-            a === null || b === null || result === null ||
-            a <= 0 || b <= 0
+            a === null || b === null || result === null
         ) {
+            return false;
+        }
+
+
+        // 枠が1つの場合、使わない式は0×0＝0を許容
+        const isUnusedFormula =
+            chocoFrames.length === 1 &&
+            a === 0 &&
+            b === 0 &&
+            result === 0;
+
+        // それ以外の0を含む式は不正解
+        if (!isUnusedFormula && (a <= 0 || b <= 0)) {
             return false;
         }
 
@@ -3932,6 +4010,16 @@ function checkChocolateAnswer(data) {
     const remainingFrames = [...chocoFrames];
 
     for (const formula of formulas) {
+
+         // 枠が1つの場合、0×0＝0には対応する枠がない
+        if (
+            chocoFrames.length === 1 &&
+            formula.a === 0 &&
+            formula.b === 0 &&
+            formula.result === 0
+        ) {
+            continue;
+        }
 
         const index = remainingFrames.findIndex(frame => {
 
